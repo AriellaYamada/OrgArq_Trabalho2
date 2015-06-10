@@ -55,6 +55,19 @@ int recoverBookByRRN (FILE *, Book *, int *);
 /* Recupera todos os livros com o campo year desejado
  * Salva todos os livros no vetor de registros e atualiza o seu tamanho
  */
+
+int createIndexByAuthor (FILE *, char *);
+
+/* Inicializa um indice de livros secundário que tem como chave o autor
+*  Armazena o índice em um arquivo separado
+*/
+
+int createIndexByPublisher (FILE *, char *);
+
+/* Inicializa um indice de livros secundário que tem como chave a editora
+*  Armazena o índice criado em um arquivo separado
+*/
+
 int searchByYear (FILE *, Book *, int *, int *);
 
 /* Remove logicamente um registro a partir de seu RRN
