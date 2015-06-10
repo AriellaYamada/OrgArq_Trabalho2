@@ -35,37 +35,61 @@ int createBookFile (FILE *);
  * sobre o registro removido, caso contrário o novo registro é colocado no fim
  * do arquivo
  */
+
 int addBook (FILE *, Book *);
 
 /* Adiciona vários livros ao registro
  * Todos os registros são colocados sequenciamente no fim do arquivo
  */
+
 int addBooks (FILE *, Book *, int *);
 
 /* Recupera todos os arquivos válidos do registro
  * Copia todos os dados para o vetor de registros, realocando memória se necessário
  */
+
 int recoverBooks (FILE *, Book **, int *);
 
 /* Recupera um livro a partir de um rrn
  * Salva o livro de rrn desejado na variáve do tipo Book
  */
+
 int recoverBookByRRN (FILE *, Book *, int *);
 
 /* Recupera todos os livros com o campo year desejado
  * Salva todos os livros no vetor de registros e atualiza o seu tamanho
  */
 
-int createIndexByAuthor (FILE *, char *);
+int createIndexByAuthor (FILE *);
 
 /* Inicializa um indice de livros secundário que tem como chave o autor
 *  Armazena o índice em um arquivo separado
 */
 
-int createIndexByPublisher (FILE *, char *);
+int createIndexByPublisher (FILE *);
 
 /* Inicializa um indice de livros secundário que tem como chave a editora
 *  Armazena o índice criado em um arquivo separado
+*/
+
+int searchByAuthor (FILE *, char *);
+
+/* Busca o autor desejado a partir do arquivo de indice
+*/
+
+int searchByPublisher (FILE *, char *);
+
+/* Busca a editora desejada a partir do arquivo de indice
+*/
+
+int searchByAuthorAndPublisher (FILE *, char *, char *);
+
+/* Busca por autor e editora simultanemante
+*/
+
+int searchByAuthorOrPublisher (FILE *, char *, char *);
+
+/* Busca por autor ou editora simultaneamente
 */
 
 int searchByYear (FILE *, Book *, int *, int *);
@@ -73,6 +97,9 @@ int searchByYear (FILE *, Book *, int *, int *);
 /* Remove logicamente um registro a partir de seu RRN
  * Atualiza o topo da pilha
  */
+ 
 int removeByRRN (FILE *, int *);
+
+
 
 #endif
