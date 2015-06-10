@@ -23,10 +23,10 @@ typedef struct book {
 	float price;
 } Book;
 
-
 /* Inicializa o arquivo de registros
  * Se o arquivo estiver vazio, a função inicializa o cabeçalho
  * com o topo da pilha igual a -1 *
+ * com o numero total de registros igual a 0
  */
 int createBookFile (FILE *);
 
@@ -97,7 +97,7 @@ int searchByYear (FILE *, Book *, int *, int *);
 /* Remove logicamente um registro a partir de seu RRN
  * Atualiza o topo da pilha
  */
- 
+
 int removeByRRN (FILE *, int *);
 
 
