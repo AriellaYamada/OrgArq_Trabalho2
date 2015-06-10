@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define SEPARATORS 7
+
 // Define a code for each possible error
 #define SUCCESS 0
 #define INVALID_FILE -1

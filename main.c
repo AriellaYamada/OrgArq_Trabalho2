@@ -105,119 +105,65 @@ void printBooks(Book *book_reg, int size) {
 	}
 }
 
+char *readString() {
+
+	char *string, c;
+	int size = 0;
+
+	scanf("%s", &c);
+	while (strcmp(c, '\n') != 0) {
+		string = (char *) realloc (string, (size + 1) * sizeof(char));
+		string[size] = c;
+		size++;
+		scanf("%s", &c);
+	}
+	string = (char *) realloc (string, (size + 1) * sizeof(char));
+	string[size] = '\0';
+}
+
 int readBookData(Book *book_reg) {
-	int size;
+
 	// Verifica se o registro foi inicializado corretamente
 	if (book_reg == NULL)
 		return INVALID_REGISTER;
 
 	printf("***ENTRE COM OS DADOS DO LIVRO***\n\n");
 
+	book_reg->size = 0;
+
 	printf("Titulo: ");
-	fgets(book_reg->title, TITLE_SIZE, stdin);
-	size = strlen(book_reg->title);
-	book_reg->title[size-1] = '\0';
+	book_reg->title = readString();
+	book_reg->size += strlen(book_reg->title);
 
 	printf("Autor: ");
-	fgets(book_reg->author, AUTHOR_SIZE, stdin);
-	size = strlen(book_reg->author);
-	book_reg->author[size-1] = '\0';
+	book_reg->author = readString();
+	book_reg->size += strlen(book_reg->author);
 
 	printf("Editor: ");
-	fgets(book_reg->publisher, PUBLISHER_SIZE, stdin);
-	size = strlen(book_reg->publisher);
-	book_reg->publisher[size-1] = '\0';
+	book_reg->publisher = readString();
+	book_reg->size += strlen(book_reg->publisher);
 
 	printf("Ano: ");
 	scanf("%d", &book_reg->year);
+	book_reg->size += sizeof(int);
 
 	getchar();
 
 	printf("Lingua: ");
-	fgets(book_reg->language, LANGUAGE_SIZE, stdin);
-	size = strlen(book_reg->language);
-	book_reg->language[size-1] = '\0';
+	book_reg->language = readString();
+	book_reg->size += strlen(book_reg->language);
 
 	printf("Numero de Paginas: ");
 	scanf("%d", &book_reg->pages);
+	book_reg->size += sizeof(int);
 
 	printf("Preco: ");
 	scanf("%f", &book_reg->price);
+	book_reg->size += sizeof(float);
 
 	getchar();
 
 	return SUCCESS;
-}
-
-int readBooksData(Book **book_reg, int *reg_number) {
-	int size, i = 0;
-	Book book_aux;
-	// Verifica se o registro foi inicializado corretamente
-	if (book_reg == NULL)
-		return INVALID_REGISTER;
-	else if (reg_number == NULL || *reg_number <= 0)
-		return INVALID_ARGUMENT;
-
-	printf("***ENTRE COM OS DADOS DO LIVRO***\n\n");
-
-	do {
-		printf("Para finalisar o cadastro de livro digite: ...\n");
-
-		printf("Titulo: ");
-		fgets(book_aux.title, TITLE_SIZE, stdin);
-		size = strlen(book_aux.title);
-		book_aux.title[size-1] = '\0';
-
-		printf("Autor: ");
-		fgets(book_aux.author, AUTHOR_SIZE, stdin);
-		size = strlen(book_aux.author);
-		book_aux.author[size-1] = '\0';
-
-		printf("Editor: ");
-		fgets(book_aux.publisher, PUBLISHER_SIZE, stdin);
-		size = strlen(book_aux.publisher);
-		book_aux.publisher[size-1] = '\0';
-
-		printf("Ano: ");
-		scanf("%d", &book_aux.year);
-
-		getchar();
-
-		printf("Lingua: ");
-		fgets(book_aux.language, LANGUAGE_SIZE, stdin);
-		size = strlen(book_aux.language);
-		book_aux.language[size-1] = '\0';
-
-		printf("Numero de Paginas: ");
-		scanf("%d", &book_aux.pages);
-
-		printf("Preco: ");
-		scanf("%f", &book_aux.price);
-
-		getchar();
-
-		book_reg[0][i++] = book_aux;
-
-		// Se for preciso de mais espaço em memória primária
-		if (i == *reg_number) {
-			*reg_number = i + 10;
-			*book_reg = (Book*) realloc(*book_reg, (*reg_number) * sizeof(Book));
-		}
-
-	} while(strcmp(book_aux.title, "...") != 0);
-
-	*reg_number = (i - 1);
-
-	return SUCCESS;
-}
-
-int getRRN() {
-	int rrn;
-	printf("***DIGITE O RRN\n\n");
-	scanf("%d", &rrn);
-	getchar();
-
-	return rrn;
 }
 
 int getYear() {
@@ -227,4 +173,13 @@ int getYear() {
 	getchar();
 
 	return year;
+}
+
+//Libera as memória alocada para a leitura das strings
+void cleanBookFile(Book *book_reg) {
+
+	free(book_reg->title);
+	free(book_reg->author);
+	free(book_reg->publisher);
+	free(book_reg->language);
 }
