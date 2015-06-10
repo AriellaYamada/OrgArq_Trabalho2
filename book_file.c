@@ -21,3 +21,4 @@ int createBookFile (FILE *book_file) {
 
 	return SUCCESS;
 }
+

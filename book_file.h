@@ -28,6 +28,7 @@ typedef struct book {
  * com o topo da pilha igual a -1 *
  * com o numero total de registros igual a 0
  */
+
 int createBookFile (FILE *);
 
 /* Adiciona um registro ao arquivo
@@ -36,69 +37,65 @@ int createBookFile (FILE *);
  * do arquivo
  */
 
-int addBook (FILE *, Book *);
+int addBook (FILE *, Book *); //ARIELLA
 
 /* Adiciona vários livros ao registro
  * Todos os registros são colocados sequenciamente no fim do arquivo
  */
 
-int addBooks (FILE *, Book *, int *);
+int addBooks (FILE *, Book *, int *); //ARIELLA
 
 /* Recupera todos os arquivos válidos do registro
  * Copia todos os dados para o vetor de registros, realocando memória se necessário
  */
 
-int recoverBooks (FILE *, Book **, int *);
+int recoverBooks (FILE *, Book **, int *); //LUCAS
 
 /* Recupera um livro a partir de um rrn
  * Salva o livro de rrn desejado na variáve do tipo Book
  */
 
-int recoverBookByRRN (FILE *, Book *, int *);
-
-/* Recupera todos os livros com o campo year desejado
- * Salva todos os livros no vetor de registros e atualiza o seu tamanho
- */
-
-int createIndexByAuthor (FILE *);
-
-/* Inicializa um indice de livros secundário que tem como chave o autor
-*  Armazena o índice em um arquivo separado
-*/
-
-int createIndexByPublisher (FILE *);
-
-/* Inicializa um indice de livros secundário que tem como chave a editora
-*  Armazena o índice criado em um arquivo separado
-*/
-
-int searchByAuthor (FILE *, char *);
-
-/* Busca o autor desejado a partir do arquivo de indice
-*/
-
-int searchByPublisher (FILE *, char *);
-
-/* Busca a editora desejada a partir do arquivo de indice
-*/
-
-int searchByAuthorAndPublisher (FILE *, char *, char *);
-
-/* Busca por autor e editora simultanemante
-*/
-
-int searchByAuthorOrPublisher (FILE *, char *, char *);
-
-/* Busca por autor ou editora simultaneamente
-*/
-
-int searchByYear (FILE *, Book *, int *, int *);
+ int searchByYear (FILE *, Book *, int *, int *); //ARIELLA
 
 /* Remove logicamente um registro a partir de seu RRN
  * Atualiza o topo da pilha
  */
 
-int removeByRRN (FILE *, int *);
+int createIndexByAuthor (FILE *); //LUCAS
+
+/* Inicializa um indice de livros secundário que tem como chave o autor
+*  Armazena o índice em um arquivo separado
+*/
+
+int createIndexByPublisher (FILE *); //LUCAS
+
+/* Inicializa um indice de livros secundário que tem como chave a editora
+*  Armazena o índice criado em um arquivo separado
+*/
+
+int searchByAuthor (FILE *, char *); //MARLY
+
+/* Busca o autor desejado a partir do arquivo de indice
+*/
+
+int searchByPublisher (FILE *, char *); //MARLY
+
+/* Busca a editora desejada a partir do arquivo de indice
+*/
+
+int searchByAuthorAndPublisher (FILE *, char *, char *); //MARCIO
+
+/* Busca por autor e editora simultanemante
+MATCHING
+*/
+
+int searchByAuthorOrPublisher (FILE *, char *, char *); //MARCIO
+
+/* Busca por autor ou editora simultaneamente
+MERGING
+*/
+
+int removeByRRN (FILE *, int *); //MARCIO
 
 
 
