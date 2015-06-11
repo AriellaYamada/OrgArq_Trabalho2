@@ -14,6 +14,9 @@
 #define INVALID_ARGUMENT -4
 #define REGISTER_NOT_FOUND -5
 
+//Boolean
+#define EQUAL 1
+
 typedef struct book {
 	int size;
 	char *title;
@@ -24,6 +27,19 @@ typedef struct book {
 	int pages;
 	float price;
 } Book;
+
+typedef struct index
+{
+	char *field;
+	int RNN;
+}Index;
+
+typedef struct list
+{
+	int byte;
+	int next;
+}List;
+
 
 /* Inicializa o arquivo de registros
  * Se o arquivo estiver vazio, a função inicializa o cabeçalho

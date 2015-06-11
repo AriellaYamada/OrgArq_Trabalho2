@@ -157,12 +157,12 @@ int createIndexByAuthor (Book **book_vector, int size)
 		return ?;
 	}
 
-	Index *index;
-	List *list;
+	Index *index = (Index*) malloc (sizeof(Index));
+	List *list = (List*) malloc (sizeof(List));
 
-	int i = 0, j = 0;
+	int i = 0, j = 0, cont = 0;
 
-	FILE *index, *list,
+	FILE *index_file, *list_file,
 	
 	index = fopen("authorindex.bin", "wb+");
 	list = fopen("authorindexlist.bin", "wb+");
@@ -171,23 +171,34 @@ int createIndexByAuthor (Book **book_vector, int size)
 	{
 		return ?;
 	}
-	// salva tudo em um vetor de structs e dai joga direto nos arquivos!
 
 	for(i = 0; i < size; i++)
 	{
-		fwrite(book_vector[i]->author, sizeof(book_vector[i]->author), 1, index);
-		
-		fwrite(book_vector[i]->size, sizeof(int), 1, list);
-
-		for(j = i, j < size; j++)
+		if(book[i]-size != EQUAL)
 		{
-			if(strcmp(book_vector[j]->autor, book_vector[i]->autor) == 0)
+			index->field = book_vector[i]->author;
+			index->RNN = cont;
+			cont++;
+			fwrite(index, sizeof(index), 1, index_file);
+			
+			list->byte = book_vector[i]->size;
+			list->next = -1;
+
+			for(j = i, j < size; j++)
 			{
-
+				if(strcmp(book_vector[j]->autor, book_vector[i]->autor) == 0)
+				{
+					list->next = cont;
+					fwrite(list, sizeof(list), 1, index_file);
+					cont++;
+					list->byte = book_vector[j]->size;
+					list->next = -1;
+				}
 			}
-		}
+			
+		fwrite(list, sizeof(list), 1, index_file);
+		cont++
 	}
-
 	return SUCCESS;
 }
 
