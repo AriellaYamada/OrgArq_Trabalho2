@@ -6,7 +6,7 @@
 void print_menu();
 void printBooks(Book *, int);
 int readBookData(Book *);
-int readBooksData(Book **, int *);
+int readBooksData(FILE *, Book *);
 int getRRN();
 int getYear();
 void cleanBookReg(Book *);
@@ -37,11 +37,16 @@ int main () {
 
 			case '1':	// CADASTRO DE LIVRO
 				error_flag = readBookData(book_reg);
-				if (error_flag == SUCCESS)
-					printf("teste if\n");
+				if (error_flag == SUCCESS) {
 					addBook(book_file, book_reg);
 					cleanBookReg(book_reg);
+				}	
 				break;
+
+			case '2':	// CADASTRO EM LOTE DE LIVROS
+				error_flag = readBooksData(book_file, book_reg);
+				break;
+
 		}
 	}
 
@@ -138,13 +143,29 @@ int readBookData(Book *book_reg) {
 	return SUCCESS;
 }
 
-int getYear() {
-	int year;
-	printf("***DIGITE O ANO\n\n");
-	scanf("%d", &year);
-	getchar();
+int readBooksData (FILE *book_file, Book *book_reg) {
 
-	return year;
+	if (book_reg == NULL)
+		return INVALID_REGISTER;
+
+	int end_flag = 0;
+	do {
+
+		printf("Para finalisar o cadastro de livro digite: ...\n\n");
+
+		if (readBookData(book_reg) == INVALID_REGISTER)
+			return INVALID_REGISTER;
+
+		addBook(book_file, book_reg);
+		
+		if(strcmp(book_reg->title, "...") == 0)
+			end_flag = 1;
+
+		cleanBookReg(book_reg);	
+
+	} while(end_flag != 1);
+
+	return SUCCESS;
 }
 
 //Libera as memória alocada para a leitura das strings

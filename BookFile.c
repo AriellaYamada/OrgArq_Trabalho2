@@ -60,10 +60,6 @@ int addBook (FILE *book_file, Book *book_data) {
 	return SUCCESS;
 }
 
-int addBooks (FILE *book_file, Book *book_data, int *n_reg) {
-	return INVALID_FILE;
-}
-
 int searchByYear (FILE *book_file, int *year) {
 	return INVALID_FILE;
 }
