@@ -9,6 +9,7 @@ int readBookData(Book *);
 int readBooksData(Book **, int *);
 int getRRN();
 int getYear();
+void cleanBookReg(Book *);
 
 int main () {
 	FILE *book_file;
@@ -37,40 +38,9 @@ int main () {
 			case '1':	// CADASTRO DE LIVRO
 				error_flag = readBookData(book_reg);
 				if (error_flag == SUCCESS)
+					printf("teste if\n");
 					addBook(book_file, book_reg);
-				break;
-
-			case '2':	// CADASTRO EM LOTE DE LIVROS
-				error_flag = readBooksData(&book_reg, &reg_number);
-				if (error_flag == SUCCESS)
-					addBooks(book_file, book_reg, &reg_number);
-				break;
-
-			case '3':	// LISTAR LIVROS CADASTRADOS
-				error_flag = recoverBooks(book_file, &book_reg, &reg_number);
-				if (error_flag == SUCCESS)
-					printBooks(book_reg, reg_number);
-				break;
-
-			case '4':	// BUSCAR LIVRO
-				rrn = getRRN();
-				error_flag = recoverBookByRRN(book_file, book_reg, &rrn);
-				if (error_flag == SUCCESS)
-					printBooks(book_reg, 1);
-				else if (error_flag == REGISTER_NOT_FOUND)
-					printf("\n***Registro apagado***\n\n");
-				break;
-
-			case '5':	// BUSCAR LIVROS POR ANO
-				year = getYear();
-				error_flag = searchByYear(book_file, book_reg, &reg_number, &year);
-				if (error_flag == SUCCESS)
-					printBooks(book_reg, reg_number);
-				break;
-
-			case '6':	// REMOVER LIVRO
-				rrn = getRRN();
-				removeByRRN(book_file, &rrn);
+					cleanBookReg(book_reg);
 				break;
 		}
 	}
@@ -107,18 +77,20 @@ void printBooks(Book *book_reg, int size) {
 
 char *readString() {
 
-	char *string, c;
+	char *string = NULL, c[2];
 	int size = 0;
 
-	scanf("%s", &c);
-	while (strcmp(c, '\n') != 0) {
+	scanf("%c", c);
+	while (strcmp(c, "\n") != 0) {
 		string = (char *) realloc (string, (size + 1) * sizeof(char));
-		string[size] = c;
+		string[size] = c[0];
 		size++;
-		scanf("%s", &c);
+		scanf("%c", c);
 	}
 	string = (char *) realloc (string, (size + 1) * sizeof(char));
 	string[size] = '\0';
+
+	return string;
 }
 
 int readBookData(Book *book_reg) {
@@ -129,7 +101,7 @@ int readBookData(Book *book_reg) {
 
 	printf("***ENTRE COM OS DADOS DO LIVRO***\n\n");
 
-	book_reg->size = 0;
+	book_reg->size = SEPARATORS;
 
 	printf("Titulo: ");
 	book_reg->title = readString();
@@ -176,7 +148,7 @@ int getYear() {
 }
 
 //Libera as memória alocada para a leitura das strings
-void cleanBookFile(Book *book_reg) {
+void cleanBookReg(Book *book_reg) {
 
 	free(book_reg->title);
 	free(book_reg->author);

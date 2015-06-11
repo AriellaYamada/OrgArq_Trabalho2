@@ -51,53 +51,53 @@ int addBooks (FILE *, Book *, int *); //ARIELLA
  * Copia todos os dados para o vetor de registros, realocando memória se necessário
  */
 
-int recoverBooks (FILE *, Book **, int *); //LUCAS
+//int recoverBooks (FILE *, Book **, int *); //LUCAS
 
 /* Recupera um livro a partir de um rrn
  * Salva o livro de rrn desejado na variáve do tipo Book
  */
 
- int searchByYear (FILE *, Book *, int *, int *); //ARIELLA
+ int searchByYear (FILE *, int *); //ARIELLA
 
 /* Remove logicamente um registro a partir de seu RRN
  * Atualiza o topo da pilha
  */
 
-int createIndexByAuthor (FILE *); //LUCAS
+//int createIndexByAuthor (FILE *); //LUCAS
 
 /* Inicializa um indice de livros secundário que tem como chave o autor
 *  Armazena o índice em um arquivo separado
 */
 
-int createIndexByPublisher (FILE *); //LUCAS
+//int createIndexByPublisher (FILE *); //LUCAS
 
 /* Inicializa um indice de livros secundário que tem como chave a editora
 *  Armazena o índice criado em um arquivo separado
 */
 
-int searchByAuthor (FILE *, char *); //MARLY
+//int searchByAuthor (FILE *, char *); //MARLY
 
 /* Busca o autor desejado a partir do arquivo de indice
 */
 
-int searchByPublisher (FILE *, char *); //MARLY
+//int searchByPublisher (FILE *, char *); //MARLY
 
 /* Busca a editora desejada a partir do arquivo de indice
 */
 
-int searchByAuthorAndPublisher (FILE *, char *, char *); //MARCIO
+//int searchByAuthorAndPublisher (FILE *, char *, char *); //MARCIO
 
 /* Busca por autor e editora simultanemante
 MATCHING
 */
 
-int searchByAuthorOrPublisher (FILE *, char *, char *); //MARCIO
+//int searchByAuthorOrPublisher (FILE *, char *, char *); //MARCIO
 
 /* Busca por autor ou editora simultaneamente
 MERGING
 */
 
-int removeByRRN (FILE *, int *); //MARCIO
+//int removeByRRN (FILE *, int *); //MARCIO
 
 
 
