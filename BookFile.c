@@ -64,3 +64,105 @@ int searchByYear (FILE *book_file, int *year) {
 	return INVALID_FILE;
 }
 
+int recoverBooks (FILE *book_file, Book **book_vector)
+{
+	if(book_file == NULL)
+	{
+		return INVALID_FILE;
+	}
+	
+
+	int byteofsset = 0;
+
+	for (int i = 0; i < numb_reg; i++)
+	{
+		fread(&book_vector[i]->size, sizeof(int), 1, book_file);  
+
+		book_vector[i]->title     = readBookData(book_file);
+		book_vector[i]->author    = readBookData(book_file);
+		book_vector[i]->publisher = readBookData(book_file);		
+
+		fread(&book_vector[i]->year, sizeof(int), 1, book_file);
+
+		book_vector[i]->language  = readBookData(book_file);
+		
+		fread(&book_vector[i]->pages, sizeof(int), 1, book_file);
+
+		fread(&book_vector[i]->price, sizeof(float), 1, book_file);
+	}		
+	
+	return SUCCESS;
+}
+
+char *readBookData(FILE *stream)
+{
+	char *buffer = NULL;
+	char character;
+	int counter = 0;
+
+	do {
+		character = fgetc(stream);
+
+		buffer = (char *) realloc(buffer, sizeof(char)* (counter+1));
+
+		buffer[counter++] = character;
+
+	} while (character != '|');
+
+	buffer[counter-1] = '\0';
+
+	return buffer;
+}
+
+
+int createIndexByAuthor (Book **book_vector, int size)
+{
+	if(*book_vector == NULL && book_vector == NULL)
+	{
+		return ?;
+	}
+
+	Index *index;
+	List *list;
+
+	int i = 0, j = 0;
+
+	FILE *index, *list,
+	
+	index = fopen("authorindex.bin", "wb+");
+	list = fopen("authorindexlist.bin", "wb+");
+
+	if(index == NULL && list == NULL)
+	{
+		return ?;
+	}
+	// salva tudo em um vetor de structs e dai joga direto nos arquivos!
+
+	for(i = 0; i < size; i++)
+	{
+		fwrite(book_vector[i]->author, sizeof(book_vector[i]->author), 1, index);
+		
+		fwrite(book_vector[i]->size, sizeof(int), 1, list);
+
+		for(j = i, j < size; j++)
+		{
+			if(strcmp(book_vector[j]->autor, book_vector[i]->autor) == 0)
+			{
+
+			}
+		}
+	}
+
+	return SUCCESS;
+}
+
+int createIndexByPublisher (Book **book_vector)
+{
+	if(book_file == NULL)
+	{
+		return INVALID_FILE;
+	}
+
+	return SUCCESS;
+
+}
