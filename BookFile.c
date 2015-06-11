@@ -4,7 +4,6 @@
 int createBookFile (FILE *book_file) {
 	long int size;
 	long int stack_top = -1;
-	long int n_reg = 0;
 
 	// Verifica se o ponteiro para arquivo é válido
 	if (book_file == NULL)
@@ -16,11 +15,32 @@ int createBookFile (FILE *book_file) {
 
 	// Se o arquivo estiver vazio, inicializa o topo da pilha com -1
 	if (size == 0) {
-		fwrite(&n_reg, sizeof(long int), 1, book_file);
 		fwrite(&stack_top, sizeof(long int), 1, book_file);
 	}
 
 	return SUCCESS;
+}
+
+long int findOffset(FILE *book_file) {
+	long int offset = -1, aux_offset;
+	int reg_size, longest_reg = 0;
+
+	//Le o topo da pilha de excluidos
+	fseek(book_file, 0, SEEK_SET);
+	fread(&aux_offset, sizeof(long int), 1, book_file);
+
+	while (aux_offset != -1) {
+		fseek(book_file, aux_offset, SEEK_SET);
+		fread(&reg_size, sizeof(int), 1, book_file);
+		if (reg_size > longest_reg) {
+			longest_reg = reg_size;
+			offset = aux_offset;
+		}
+		fseek(book_file, aux_offset + sizeof(int), SEEK_SET);
+		fread(&aux_offset, sizeof(long int), 1, book_file);
+	}
+
+	return offset;
 }
 
 int addBook (FILE *book_file, Book *book_data) {
@@ -30,10 +50,18 @@ int addBook (FILE *book_file, Book *book_data) {
 
 	char *reg, aux[20];
 
+	long int offset = findOffset(book_file);
+
+	if (offset == -1) {
+		fseek(book_file, 0, SEEK_END);
+	} else {
+		fseek(book_file, offset, SEEK_SET);
+	}
+
 	//Escreve o tamanho do registro no arquivo
 	fwrite(&book_data->size, sizeof(int), 1, book_file);
 
-	int reg_size = book_data->size - (2 * sizeof(int)) - sizeof(float)) + SEPARATORS; 
+	int reg_size = book_data->size - (2 * sizeof(int)) - sizeof(float) + SEPARATORS + 1; 
 
 	reg = (char *) malloc ((book_data->size - (2 * sizeof(int) - sizeof(float))) * sizeof(char *));
 
@@ -55,7 +83,7 @@ int addBook (FILE *book_file, Book *book_data) {
 	fwrite(&book_data->price, sizeof(float), 1, book_file);
 
 	//Escreve o separador de registro no arquivo
-	reg = (char *) realloc (1 * sizeof(char));
+	reg = (char *) realloc (reg, 2 * sizeof(char));
 	reg[0] = '#';
 	fwrite(&reg, sizeof(char), 1, book_file);
 
@@ -66,48 +94,45 @@ int addBook (FILE *book_file, Book *book_data) {
 
 int readRegister(FILE *book_file, Book *book_data) {
 
-	int p = 0, size_field = 0, reg_size;
-	char *reg;
-
-	if (reg[p] == '*')
-		return INVALID_REGISTER;
+	int size_field = 0, reg_size;
+	char reg[2];
 
 	fread(&reg_size, sizeof(int), 1, book_file);
-	fread(&reg, sizeof(char), (reg_size - (2 * sizeof(int)) - sizeof(float)), book_file);
+	fread(&reg, sizeof(char), 1, book_file);
+
+	if (reg[0] == '*')
+		return INVALID_REGISTER;
 
 	//Leitura do Titulo
-	while(reg[p] != '|') {
+	while(reg[0] != '|') {
 		book_data->title = (char *) realloc (book_data->title, (size_field + 1) * sizeof(char));
-		book_data->title[size_field] = reg[p];
+		book_data->title[size_field] = reg[0];
 		size_field++;
-		p++;
+		fread(&reg, sizeof(char), 1, book_file);
 	}
 	//Leitura do Autor
 	size_field = 0;
-	p++;
-	while(reg[p] != '|') {
+	while(reg[0] != '|') {
 		book_data->author = (char *) realloc (book_data->author, (size_field + 1) * sizeof(char));
-		book_data->author[size_field] = reg[p];
+		book_data->author[size_field] = reg[0];
 		size_field++;
-		p++;
+		fread(&reg, sizeof(char), 1, book_file);
 	}
 	//Leitura da Editora
 	size_field = 0;
-	p++;
-	while(reg[p] != '|') {
+	while(reg[0] != '|') {
 		book_data->publisher = (char *) realloc (book_data->publisher, (size_field + 1) * sizeof(char));
-		book_data->publisher[size_field] = reg[p];
+		book_data->publisher[size_field] = reg[0];
 		size_field++;
-		p++;
+		fread(&reg, sizeof(char), 1, book_file);
 	}
 	//Leitura da Lingua
 	size_field = 0;
-	p++;
-	while(reg[p] != '|') {
+	while(reg[0] != '|') {
 		book_data->language = (char *) realloc (book_data->language, (size_field + 1) * sizeof(char));
-		book_data->language[size_field] = reg[p];
+		book_data->language[size_field] = reg[0];
 		size_field++;
-		p++;
+		fread(&reg, sizeof(char), 1, book_file);
 	}	
 	//Leitura do Ano
 	fread(&(book_data->year), sizeof(int), 1, book_file);
@@ -124,27 +149,6 @@ int readRegister(FILE *book_file, Book *book_data) {
 }
 
 int searchByYear (FILE *book_file, int *year) {
-
-
-	if (book_file == NULL)
-		return INVALID_FILE;
-
-	char *reg;
-	int reg_size, stack_top, total_reg;
-	Book *books;
-
-	fseek(book_file, SEEK_SET, 0);
-
-	fread(&total_reg, sizeof(int), 1, book_file);
-	fread(&stack_top, sizeof(int), 1, book_file);
-
-	while (fread(&reg_size, sizeof(int), 1, book_file) != EOF) {
-		reg = (char *) realloc (reg, reg_size * sizeof(char));
-		fread(reg, sizeof(char), reg_size, book_file);
-
-
-	}
-
-
+	return INVALID_FILE;
 }
 
