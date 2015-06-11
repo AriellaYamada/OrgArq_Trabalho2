@@ -164,8 +164,8 @@ int createIndexByAuthor (Book **book_vector, int size)
 
 	FILE *index_file, *list_file,
 	
-	index = fopen("authorindex.bin", "wb+");
-	list = fopen("authorindexlist.bin", "wb+");
+	index_file = fopen("authorindex.bin", "wb+");
+	list_file = fopen("authorindexlist.bin", "wb+");
 
 	if(index == NULL && list == NULL)
 	{
@@ -189,7 +189,7 @@ int createIndexByAuthor (Book **book_vector, int size)
 				if(strcmp(book_vector[j]->autor, book_vector[i]->autor) == 0)
 				{
 					list->next = cont;
-					fwrite(list, sizeof(list), 1, index_file);
+					fwrite(list, sizeof(list), 1, list_file);
 					cont++;
 					list->byte = book_vector[j]->size;
 					list->next = -1;
@@ -197,7 +197,7 @@ int createIndexByAuthor (Book **book_vector, int size)
 				}
 			}
 
-		fwrite(list, sizeof(list), 1, index_file);
+		fwrite(list, sizeof(list), 1, list_file);
 		cont++
 	}
 	return SUCCESS;
