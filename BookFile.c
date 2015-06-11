@@ -60,6 +60,85 @@ int addBook (FILE *book_file, Book *book_data) {
 	return SUCCESS;
 }
 
+Book *readRegister (char *reg) {
+
+	int p = 0, size_field = 0;
+	char *aux;
+
+	if (reg[p] == '*')
+		return INVALID_REGISTER;
+
+	Book *book_reg = (Book *) malloc (sizeof(Book));
+
+	//Leitura do Titulo
+	while(reg[p] != '|') {
+		book_reg->title = (char *) realloc (book_reg->title, (size_field + 1) * sizeof(char));
+		book_reg->title[size_field] = reg[p];
+		size_field++;
+		p++;
+	}
+	//Leitura do Autor
+	size_field = 0;
+	p++;
+	while(reg[p] != '|') {
+		book_reg->author = (char *) realloc (book_reg->author, (size_field + 1) * sizeof(char));
+		book_reg->author[size_field] = reg[p];
+		size_field++;
+		p++;
+	}
+	//Leitura da Editora
+	size_field = 0;
+	p++;
+	while(reg[p] != '|') {
+		book_reg->publisher = (char *) realloc (book_reg->publisher, (size_field + 1) * sizeof(char));
+		book_reg->publisher[size_field] = reg[p];
+		size_field++;
+		p++;
+	}
+	//Leitura do Ano
+	size_field = 0;
+	p++;
+	while(reg[p] != '|') {
+		aux = (char *) realloc (aux, (size_field + 1) * sizeof(char));
+		aux[size_field] = reg[p];
+		size_field++;
+		p++;
+	}
+	sscanf(aux, "%d", &(book_reg->year));
+	//Leitura da Lingua
+	size_field = 0;
+	p++;
+	while(reg[p] != '|') {
+		book_reg->language = (char *) realloc (book_reg->language, (size_field + 1) * sizeof(char));
+		book_reg->language[size_field] = reg[p];
+		size_field++;
+		p++;
+	}
+	//Leitura do Numero de Paginas
+	size_field = 0;
+	p++;
+	while(reg[p] != '|') {
+		aux = (char *) realloc (aux, (size_field + 1) * sizeof(char));
+		aux[size_field] = reg[p];
+		size_field++;
+		p++;
+	}
+	sscanf(aux, "%d", &(book_reg->pages));
+	//Leitura do Preco
+	size_field = 0;
+	p++;
+	while(reg[p] != '|') {
+		aux = (char *) realloc (aux, (size_field + 1) * sizeof(char));
+		aux[size_field] = reg[p];
+		size_field++;
+		p++;
+	}
+	sscanf(aux, "%f", &(book_reg->price));
+
+	free(aux);
+
+}
+
 int searchByYear (FILE *book_file, int *year) {
 	return INVALID_FILE;
 }
