@@ -13,6 +13,7 @@
 #define INVALID_RRN -3
 #define INVALID_ARGUMENT -4
 #define REGISTER_NOT_FOUND -5
+#define INVALID_POINTER -6
 
 //Boolean
 #define EQUAL 1

@@ -154,7 +154,7 @@ int createIndexByAuthor (Book **book_vector, int size)
 {
 	if(*book_vector == NULL && book_vector == NULL)
 	{
-		return ?;
+		return INVALID_POINTER;
 	}
 
 	Index *index = (Index*) malloc (sizeof(Index));
@@ -169,7 +169,7 @@ int createIndexByAuthor (Book **book_vector, int size)
 
 	if(index == NULL && list == NULL)
 	{
-		return ?;
+		return INVALID_FILE;
 	}
 
 	for(i = 0; i < size; i++)
@@ -193,9 +193,10 @@ int createIndexByAuthor (Book **book_vector, int size)
 					cont++;
 					list->byte = book_vector[j]->size;
 					list->next = -1;
+					book_vector[j]->size = EQUAL;
 				}
 			}
-			
+
 		fwrite(list, sizeof(list), 1, index_file);
 		cont++
 	}
