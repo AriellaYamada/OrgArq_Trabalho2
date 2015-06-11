@@ -117,7 +117,13 @@ int readRegister (Book *book_reg, char *reg) {
 
 }
 
-int searchByYear (FILE *book_file, int *year) {
-	return INVALID_FILE;
+int searchByYear (FILE *book_file, Book **book_data, int *year) {
+
+	if(book_file == NULL)
+		return INVALID_FILE;
+
+	
+
+	return SUCCESS;
 }
 
