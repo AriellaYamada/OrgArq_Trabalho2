@@ -1,7 +1,8 @@
 #include "BookFile.h"
 #include <string.h>
 
-int createBookFile (FILE *book_file) {
+int createBookFile (FILE *book_file)
+{
 	long int size;
 	long int stack_top = -1;
 	long int n_reg = 0;
@@ -15,7 +16,8 @@ int createBookFile (FILE *book_file) {
 	size = ftell (book_file);
 
 	// Se o arquivo estiver vazio, inicializa o topo da pilha com -1
-	if (size == 0) {
+	if (size == 0) 
+	{
 		fwrite(&stack_top, sizeof(long int), 1, book_file);
 		fwrite(&n_reg, sizeof(long int), 1, book_file);
 	}
@@ -23,7 +25,8 @@ int createBookFile (FILE *book_file) {
 	return SUCCESS;
 }
 
-int addBook (FILE *book_file, Book *book_data) {
+int addBook (FILE *book_file, Book *book_data) 
+{
 
 	if (book_file == NULL)
 		return INVALID_FILE;
@@ -60,8 +63,63 @@ int addBook (FILE *book_file, Book *book_data) {
 	return SUCCESS;
 }
 
-int searchByYear (FILE *book_file, int *year) {
-	return INVALID_FILE;
+char **separateFields (char *reg) 
+{
+	int p = 0, n_field = 0, size_field;
+
+	char **fields;
+
+	while(reg[p] != '#')
+	{
+		fields = (char **) realloc (fields, (n_field + 1) * sizeof(char *));
+		size_field = 0;
+		while(reg[p] != '|') 
+		{
+			fields[n_field] = (char *) realloc (fields[n_field], (size_field + 1) * sizeof(char));
+			fields[n_field][size_field] = reg[p];
+			size_field++;
+			p++;
+		}
+		n_field++;
+	}
+}
+
+int readRegister (Book *book_reg, char *reg) 
+{
+	int p = 0, size_field = 0;
+
+	if (reg[p] == '*')
+		return INVALID_REGISTER;
+
+	Book *book_reg = (Book *) malloc (sizeof(Book));
+
+	char **fields = separateFields(reg);
+
+	//Leitura do Titulo
+	strcpy(book_reg->title, fields[0]);
+	free(fields[0]);
+	//Leitura do Autor
+	strcpy(book_reg->author, fields[1]);
+	free(fields[1]);
+	//Leitura da Editora
+	strcpy(book_reg->publisher, fields[2]);
+	free(fields[2]);
+	//Leitura do Ano
+	sscanf(fields[3], "%d", &(book_reg->year));
+	free(fields[3]);
+	//Leitura da Lingua
+	strcpy(book_reg->language, fields[4]);
+	free(fields[4]);
+	//Leitura do Numero de Paginas
+	sscanf(fields[5], "%d", &(book_reg->pages));
+	free(fields[5]);
+	//Leitura do Preco
+	sscanf(fields[6], "%f", &(book_reg->price));
+	free(fields[6]);
+
+	free(fields);
+
+	return SUCCESS;
 }
 
 int recoverBooks (FILE *book_file, Book **book_vector)
@@ -70,26 +128,24 @@ int recoverBooks (FILE *book_file, Book **book_vector)
 	{
 		return INVALID_FILE;
 	}
-	
 
-	int byteofsset = 0;
-
-	for (int i = 0; i < numb_reg; i++)
+	if(*book_vector == NULL && book_vector == NULL)
 	{
-		fread(&book_vector[i]->size, sizeof(int), 1, book_file);  
+		return ?;
+	}
 
-		book_vector[i]->title     = readBookData(book_file);
-		book_vector[i]->author    = readBookData(book_file);
-		book_vector[i]->publisher = readBookData(book_file);		
+	char *reg;
 
-		fread(&book_vector[i]->year, sizeof(int), 1, book_file);
+	while(!feof(book_file))
+	{
+		fread(&book_vector[i]->size, sizeof(int), 1, book_file); 
 
-		book_vector[i]->language  = readBookData(book_file);
+		reg = realloc (reg, book_vector[i]->size);
 		
-		fread(&book_vector[i]->pages, sizeof(int), 1, book_file);
+		fread(*reg, sizeof(reg), 1, book_file); 
 
-		fread(&book_vector[i]->price, sizeof(float), 1, book_file);
-	}		
+		readRegister(book_vector[i], reg);
+	}
 	
 	return SUCCESS;
 }
