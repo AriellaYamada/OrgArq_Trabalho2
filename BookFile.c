@@ -150,27 +150,6 @@ int recoverBooks (FILE *book_file, Book **book_vector)
 	return SUCCESS;
 }
 
-char *readBookData(FILE *stream)
-{
-	char *buffer = NULL;
-	char character;
-	int counter = 0;
-
-	do {
-		character = fgetc(stream);
-
-		buffer = (char *) realloc(buffer, sizeof(char)* (counter+1));
-
-		buffer[counter++] = character;
-
-	} while (character != '|');
-
-	buffer[counter-1] = '\0';
-
-	return buffer;
-}
-
-
 int createIndexByAuthor (Book **book_vector, int size)
 {
 	if(*book_vector == NULL && book_vector == NULL)
