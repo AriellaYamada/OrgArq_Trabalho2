@@ -35,7 +35,7 @@ int addBook (FILE *book_file, Book *book_data) {
 
 	int reg_size = book_data->size - (2 * sizeof(int)) - sizeof(float)) + SEPARATORS; 
 
-	reg = (char *) malloc (book_data->size * sizeof(char *));
+	reg = (char *) malloc ((book_data->size - (2 * sizeof(int) - sizeof(float))) * sizeof(char *));
 
 	//Concatena todos os campos de string em uma 'palavra'
 	strcat(reg, book_data->title);
@@ -51,19 +51,11 @@ int addBook (FILE *book_file, Book *book_data) {
 	fwrite(&reg, book_data->size * sizeof(char), 1, book_file);
 	//Escreve o ano no arquivo
 	fwrite(&book_data->year, sizeof(int), 1, book_file);
-	reg = (char *) realloc (1 * sizeof(char));
-	reg[0] = '|';
-	//Escreve o separador de campo no arquivo
-	fwrite(&reg, sizeof(char), 1, book_file);
-	//Escreve o numero de paginas no arquivo	
-	fwrite(&book_data->pages, sizeof(int), 1, book_file);
-	//Escreve o separador de campo no arquivo
-	fwrite(&reg, sizeof(char), 1, book_file);
 	//Escreve o preco do livro no arquivo
 	fwrite(&book_data->price, sizeof(float), 1, book_file);
-	//Escreve o separador de campo no arquivo
-	fwrite(&reg, sizeof(char), 1, book_file);
+
 	//Escreve o separador de registro no arquivo
+	reg = (char *) realloc (1 * sizeof(char));
 	reg[0] = '#';
 	fwrite(&reg, sizeof(char), 1, book_file);
 
@@ -72,19 +64,21 @@ int addBook (FILE *book_file, Book *book_data) {
 	return SUCCESS;
 }
 
-Book *readRegister (char *reg) {
+int readRegister(FILE *book_file, Book *book_data) {
 
-	int p = 0, size_field = 0;
+	int p = 0, size_field = 0, reg_size;
+	char *reg;
 
 	if (reg[p] == '*')
 		return INVALID_REGISTER;
 
-	Book *book_reg = (Book *) malloc (sizeof(Book));
+	fread(&reg_size, sizeof(int), 1, book_file);
+	fread(&reg, sizeof(char), (reg_size - (2 * sizeof(int)) - sizeof(float)), book_file);
 
 	//Leitura do Titulo
 	while(reg[p] != '|') {
-		book_reg->title = (char *) realloc (book_reg->title, (size_field + 1) * sizeof(char));
-		book_reg->title[size_field] = reg[p];
+		book_data->title = (char *) realloc (book_data->title, (size_field + 1) * sizeof(char));
+		book_data->title[size_field] = reg[p];
 		size_field++;
 		p++;
 	}
@@ -92,8 +86,8 @@ Book *readRegister (char *reg) {
 	size_field = 0;
 	p++;
 	while(reg[p] != '|') {
-		book_reg->author = (char *) realloc (book_reg->author, (size_field + 1) * sizeof(char));
-		book_reg->author[size_field] = reg[p];
+		book_data->author = (char *) realloc (book_data->author, (size_field + 1) * sizeof(char));
+		book_data->author[size_field] = reg[p];
 		size_field++;
 		p++;
 	}
@@ -101,15 +95,32 @@ Book *readRegister (char *reg) {
 	size_field = 0;
 	p++;
 	while(reg[p] != '|') {
-		book_reg->publisher = (char *) realloc (book_reg->publisher, (size_field + 1) * sizeof(char));
-		book_reg->publisher[size_field] = reg[p];
+		book_data->publisher = (char *) realloc (book_data->publisher, (size_field + 1) * sizeof(char));
+		book_data->publisher[size_field] = reg[p];
 		size_field++;
 		p++;
 	}
+	//Leitura da Lingua
+	size_field = 0;
+	p++;
+	while(reg[p] != '|') {
+		book_data->language = (char *) realloc (book_data->language, (size_field + 1) * sizeof(char));
+		book_data->language[size_field] = reg[p];
+		size_field++;
+		p++;
+	}	
 	//Leitura do Ano
+	fread(&(book_data->year), sizeof(int), 1, book_file);
+	//Leitura do Numero de Paginas
+	fread(&(book_data->pages), sizeof(int), 1, book_file);
+	//Leitura do Preco
+	fread(&(book_data->price), sizeof(float), 1, book_file);
+	//Leitura do separador
+	fread(&reg, sizeof(char), 1, book_file);
 
+	free(reg);
 
-
+	return SUCCESS;
 }
 
 int searchByYear (FILE *book_file, int *year) {

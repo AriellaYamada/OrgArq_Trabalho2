@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define SEPARATORS 8
+#define SEPARATORS 4
 
 // Define a code for each possible error
 #define SUCCESS 0
