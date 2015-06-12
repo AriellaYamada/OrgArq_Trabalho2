@@ -97,7 +97,6 @@ int readRegister(FILE *book_file, Book *book_data) {
 	int size_field = 0, reg_size;
 	char reg[2];
 
-	fread(&reg_size, sizeof(int), 1, book_file);
 	fread(&reg, sizeof(char), 1, book_file);
 
 	if (reg[0] == '*')
