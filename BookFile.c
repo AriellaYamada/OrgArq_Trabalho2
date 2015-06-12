@@ -75,7 +75,7 @@ int addBook (FILE *book_file, Book *book_data)
 	//Escreve o tamanho do registro no arquivo
 	fwrite(&book_data->size, sizeof(int), 1, book_file);
 
-	int reg_size = book_data->size - (2 * sizeof(int)) - sizeof(float) + SEPARATORS + 1; 
+	int reg_size = book_data->size - (2 * sizeof(int)) - sizeof(float) + SEPARATORS; 
 
 	reg = (char *) malloc ((book_data->size - (2 * sizeof(int) - sizeof(float))) * sizeof(char *));
 
@@ -125,72 +125,52 @@ char **separateFields (char *reg, int size) {
 		n_field++;
 		p++;
 	}
+
+	return fields;
 }
 
-int readRegister(FILE *book_file, Book *book_data) 
+int readRegister(FILE *book_file, Book *book_reg) 
 {
 	int size_field = 0, reg_size;
 
 	fread(&reg_size, sizeof(int), 1, book_file);
 
+	printf("reg_size: %d %lu\n", reg_size, STRINGREG_SIZE(reg_size));
 	char *reg = (char *) malloc (STRINGREG_SIZE(reg_size) * sizeof(char));
+	printf("teste\n");
 	fread(&reg, sizeof(char), STRINGREG_SIZE(reg_size), book_file);
+
+	printf("%s\n", reg);
 
 	if (reg[0] == '*')
 		return INVALID_REGISTER;
 
-	
+	char **fields = separateFields(reg, STRINGREG_SIZE(reg_size));
 
 	//Leitura do Titulo
-	while(reg[0] != '|')
-	{
-		printf("%c", reg[0]);
-		book_data->title = (char *) realloc (book_data->title, (size_field + 1) * sizeof(char));
-		book_data->title[size_field] = reg[0];
-		size_field++;
-		fread(&reg, sizeof(char), 1, book_file);
-	}
-	printf("\n");
+	strcpy(book_reg->title, fields[0]);
+	free(fields[0]);
 	//Leitura do Autor
-	size_field = 0;
-	while(reg[0] != '|') 
-	{
-		printf("%c", reg[0]);
-		book_data->author = (char *) realloc (book_data->author, (size_field + 1) * sizeof(char));
-		book_data->author[size_field] = reg[0];
-		size_field++;
-		fread(&reg, sizeof(char), 1, book_file);
-	}
-	printf("\n");
+	strcpy(book_reg->author, fields[1]);
+	free(fields[1]);
 	//Leitura da Editora
-	size_field = 0;
-	while(reg[0] != '|') 
-	{
-		printf("%c", reg[0]);
-		book_data->publisher = (char *) realloc (book_data->publisher, (size_field + 1) * sizeof(char));
-		book_data->publisher[size_field] = reg[0];
-		size_field++;
-		fread(&reg, sizeof(char), 1, book_file);
-	}
-	printf("\n");
+	strcpy(book_reg->publisher, fields[2]);
+	free(fields[2]);
 	//Leitura da Lingua
-	size_field = 0;
-	while(reg[0] != '|') 
-	{
-		printf("%c", reg[0]);
-		book_data->language = (char *) realloc (book_data->language, (size_field + 1) * sizeof(char));
-		book_data->language[size_field] = reg[0];
-		size_field++;
-		fread(&reg, sizeof(char), 1, book_file);
-	}	
+	strcpy(book_reg->language, fields[3]);
+	free(fields[3]);
 	//Leitura do Ano
-	fread(&(book_data->year), sizeof(int), 1, book_file);
+	fread(&(book_reg->year), sizeof(int), 1, book_file);
 	//Leitura do Numero de Paginas
-	fread(&(book_data->pages), sizeof(int), 1, book_file);
+	fread(&(book_reg->pages), sizeof(int), 1, book_file);
 	//Leitura do Preco
-	fread(&(book_data->price), sizeof(float), 1, book_file);
+	fread(&(book_reg->price), sizeof(float), 1, book_file);
 	//Leitura do separador
 	fread(&reg, sizeof(char), 1, book_file);
+
+
+	free(fields);
+	free(reg);
 
 	return SUCCESS;
 }
@@ -205,7 +185,7 @@ int recoverBooks (FILE *book_file, Book ***books, int *n_reg) {
 	long int stack_top;
 
 	printf("percorrendo o arquivo\n");
-	fseek(book_file, SEEK_SET, 0);
+	fseek(book_file, 0, SEEK_SET);
 	fread(&stack_top, sizeof(long int), 1, book_file);
 	fread(n_reg, sizeof(int), 1, book_file); 
 
@@ -216,6 +196,7 @@ int recoverBooks (FILE *book_file, Book ***books, int *n_reg) {
 		printf("while\n");
 		*books[i] = (Book *) malloc (sizeof(Book));
 		if (readRegister(book_file, *books[i]) == SUCCESS)
+			printf("if\n");
 			i++;
 	}
 	

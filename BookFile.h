@@ -15,7 +15,7 @@
 #define REGISTER_NOT_FOUND -5
 #define INVALID_POINTER -6
 #define REGISTERS_OFFSET (sizeof(long int) + sizeof(int))
-#define STRINGREG_SIZE(size) (size - REGISTERS_OFFSET - 1)
+#define STRINGREG_SIZE(size) (size - REGISTERS_OFFSET)
 
 //Boolean
 #define EQUAL 1
