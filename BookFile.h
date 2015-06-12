@@ -14,6 +14,7 @@
 #define INVALID_ARGUMENT -4
 #define REGISTER_NOT_FOUND -5
 #define INVALID_POINTER -6
+#define REGISTERS_OFFSET (sizeof(long int) + sizeof(int))
 
 //Boolean
 #define EQUAL 1
@@ -68,7 +69,7 @@ int addBooks (FILE *, Book *, int *); //ARIELLA
  * Copia todos os dados para o vetor de registros, realocando memória se necessário
  */
 
-//int recoverBooks (FILE *, Book **, int *); //LUCAS
+int recoverBooks (FILE *, Book ***, int *); //LUCAS
 
 /* Recupera um livro a partir de um rrn
  * Salva o livro de rrn desejado na variáve do tipo Book
@@ -116,6 +117,7 @@ MERGING
 
 //int removeByRRN (FILE *, int *); //MARCIO
 
+int cleanBookList (Book ***, int *); //ARIELLA
 
 
 #endif

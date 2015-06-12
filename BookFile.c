@@ -111,9 +111,10 @@ int addBook (FILE *book_file, Book *book_data)
 int readRegister(FILE *book_file, Book *book_data) 
 {
 	int size_field = 0, reg_size;
-	char reg[2];
+	char *reg = (char *) malloc (sizeof(char));
 
 	fread(&reg_size, sizeof(int), 1, book_file);
+	printf("reg size: %d\n", reg_size);
 	fread(&reg, sizeof(char), 1, book_file);
 
 	if (reg[0] == '*')
@@ -122,33 +123,40 @@ int readRegister(FILE *book_file, Book *book_data)
 	//Leitura do Titulo
 	while(reg[0] != '|')
 	{
+		printf("%c", reg[0]);
 		book_data->title = (char *) realloc (book_data->title, (size_field + 1) * sizeof(char));
 		book_data->title[size_field] = reg[0];
 		size_field++;
 		fread(&reg, sizeof(char), 1, book_file);
 	}
+	printf("\n");
 	//Leitura do Autor
 	size_field = 0;
 	while(reg[0] != '|') 
 	{
+		printf("%c", reg[0]);
 		book_data->author = (char *) realloc (book_data->author, (size_field + 1) * sizeof(char));
 		book_data->author[size_field] = reg[0];
 		size_field++;
 		fread(&reg, sizeof(char), 1, book_file);
 	}
+	printf("\n");
 	//Leitura da Editora
 	size_field = 0;
 	while(reg[0] != '|') 
 	{
+		printf("%c", reg[0]);
 		book_data->publisher = (char *) realloc (book_data->publisher, (size_field + 1) * sizeof(char));
 		book_data->publisher[size_field] = reg[0];
 		size_field++;
 		fread(&reg, sizeof(char), 1, book_file);
 	}
+	printf("\n");
 	//Leitura da Lingua
 	size_field = 0;
 	while(reg[0] != '|') 
 	{
+		printf("%c", reg[0]);
 		book_data->language = (char *) realloc (book_data->language, (size_field + 1) * sizeof(char));
 		book_data->language[size_field] = reg[0];
 		size_field++;
@@ -163,32 +171,52 @@ int readRegister(FILE *book_file, Book *book_data)
 	//Leitura do separador
 	fread(&reg, sizeof(char), 1, book_file);
 
-	free(reg);
-
 	return SUCCESS;
 }
 
-int recoverBooks (FILE *book_file, Book **books)
-{
-	if(book_file == NULL)
-	{
+int recoverBooks (FILE *book_file, Book ***books, int *n_reg) {
+	printf("recoverBooks \n");
+	if(book_file == NULL) {
 		return INVALID_FILE;
 	}
 
-	if(*books == NULL && books == NULL)
-	{
-		return INVALID_POINTER;
-	}
+	int i = 0;
+	long int stack_top;
 
-	int i = 0, size = 0;
+	printf("percorrendo o arquivo\n");
+	fseek(book_file, SEEK_SET, 0);
+	fread(&stack_top, sizeof(long int), 1, book_file);
+	fread(n_reg, sizeof(int), 1, book_file); 
 
-	fseek(book_file, sizeof(long int), SEEK_SET);
-	fread(&size, sizeof(int), 1, book_file); 
+	printf("%d\n", *n_reg);
+	*books = (Book **) malloc (*n_reg * sizeof(Book *));
 
-	while (i < size) {
-		if (readRegister(book_file, books[i] == SUCCESS)
+	while (i < *n_reg) {
+		printf("while\n");
+		*books[i] = (Book *) malloc (sizeof(Book));
+		if (readRegister(book_file, *books[i]) == SUCCESS)
 			i++;
 	}
 	
+	return SUCCESS;
+}
+
+int cleanBookList (Book ***books, int *size) {
+
+	if (*books == NULL || **books == NULL)
+		return INVALID_REGISTER;
+
+	while (*size > 0) {
+		free((*books)[*size]->title);
+		free((*books)[*size]->author);
+		free((*books)[*size]->publisher);
+		free((*books)[*size]->language);
+		free((*books)[*size]);
+
+		(*size)--;
+	}
+
+	free(*books);
+
 	return SUCCESS;
 }

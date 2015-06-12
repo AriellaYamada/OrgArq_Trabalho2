@@ -4,17 +4,16 @@
 #include "BookFile.h"
 
 void print_menu();
-void printBooks(Book *, int);
+void printBooks(Book **, int);
 int readBookData(Book *);
 int readBooksData(FILE *, Book *);
-int getRRN();
 int getYear();
 void cleanBookReg(Book *);
 
 int main () {
 	FILE *book_file;
-	Book *book_reg;
-	int exit_menu = 0, reg_number, rrn, year;
+	Book *book_reg, **book_list;
+	int exit_menu = 0, n_reg;
 	char option;
 	int error_flag;
 
@@ -22,8 +21,7 @@ int main () {
 	if (book_file == NULL)
 		book_file = fopen("books.reg", "w+");
 	createBookFile(book_file);
-	book_reg = (Book*) malloc(sizeof(Book));
-	reg_number = 1;
+	book_reg = (Book *) malloc(sizeof(Book));
 
 	while (exit_menu != 1) {
 		print_menu();
@@ -47,6 +45,15 @@ int main () {
 				error_flag = readBooksData(book_file, book_reg);
 				break;
 
+			case '3':
+				printf("case 3\n");
+				error_flag = recoverBooks (book_file, &book_list, &n_reg);
+				printf("if error_flag \n");
+				if (error_flag ==  SUCCESS) {
+					printBooks(book_list, n_reg);
+					cleanBookList(&book_list, &n_reg);
+				}
+				break;
 		}
 	}
 
@@ -66,17 +73,17 @@ void print_menu() {
 	printf("6 - REMOVER LIVRO\n");
 }
 
-void printBooks(Book *book_reg, int size) {
+//Imprime todos os livros armazenados no arquivo de registros
+void printBooks(Book **book_reg, int size) {
 	int i;
 	for (i = 0; i < size; i++) {
-		printf("*****************************\n");
-		printf("Titulo: %s\n", book_reg[i].title);
-		printf("Autor: %s\n", book_reg[i].author);
-		printf("Editor: %s\n", book_reg[i].publisher);
-		printf("Ano: %d\n", book_reg[i].year);
-		printf("Lingua: %s\n", book_reg[i].language);
-		printf("Numero de Paginas: %d\n", book_reg[i].pages);
-		printf("Preco: %.2f\n\n", book_reg[i].price);
+		printf("\n\nTitulo: %s\n", book_reg[i]->title);
+		printf("Autor: %s\n", book_reg[i]->author);
+		printf("Editor: %s\n", book_reg[i]->publisher);
+		printf("Idioma: %s\n", book_reg[i]->language);
+		printf("Ano: %d\n", book_reg[i]->year);
+		printf("Numero de paginas: %d\n", book_reg[i]->pages);
+		printf("Preco: R$%.2f\n", book_reg[i]->price);
 	}
 }
 
@@ -164,20 +171,6 @@ int readBooksData (FILE *book_file, Book *book_reg) {
 	} while(end_flag != 1);
 
 	return SUCCESS;
-}
-
-//Imprime todos os livros armazenados no arquivo de registros
-void printBooks(Book *book_reg, int size) {
-	int i;
-	for (i = 0; i < size; i++) {
-		printf("\n\nTitulo: %s\n", book_reg[i].title);
-		printf("Autor: %s\n", book_reg[i].author);
-		printf("Editor: %s\n", book_reg[i].publisher);
-		printf("Idioma: %s\n", book_reg[i].language);
-		printf("Ano: %d\n", book_reg[i].year);
-		printf("Numero de paginas: %d\n", book_reg[i].pages);
-		printf("Preco: R$%.2f\n", book_reg[i].price);
-	}
 }
 
 //Libera as memória alocada para a leitura das strings
