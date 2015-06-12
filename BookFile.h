@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define SEPARATORS 4
+#define SEPARATORS 5
 
 // Define a code for each possible error
 #define SUCCESS 0
@@ -15,6 +15,7 @@
 #define REGISTER_NOT_FOUND -5
 #define INVALID_POINTER -6
 #define REGISTERS_OFFSET (sizeof(long int) + sizeof(int))
+#define STRINGREG_SIZE(size) (size - REGISTERS_OFFSET - 1)
 
 //Boolean
 #define EQUAL 1

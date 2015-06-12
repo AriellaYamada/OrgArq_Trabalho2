@@ -111,14 +111,16 @@ int addBook (FILE *book_file, Book *book_data)
 int readRegister(FILE *book_file, Book *book_data) 
 {
 	int size_field = 0, reg_size;
-	char *reg = (char *) malloc (sizeof(char));
 
 	fread(&reg_size, sizeof(int), 1, book_file);
-	printf("reg size: %d\n", reg_size);
-	fread(&reg, sizeof(char), 1, book_file);
+
+	char *reg = (char *) malloc (STRINGREG_SIZE(reg_size) * sizeof(char));
+	fread(&reg, sizeof(char), STRINGREG_SIZE(reg_size), book_file);
 
 	if (reg[0] == '*')
 		return INVALID_REGISTER;
+
+	
 
 	//Leitura do Titulo
 	while(reg[0] != '|')
