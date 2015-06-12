@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define SEPARATORS 4
+#define SEPARATORS 7
 
 // Define a code for each possible error
 #define SUCCESS 0
@@ -13,17 +13,34 @@
 #define INVALID_RRN -3
 #define INVALID_ARGUMENT -4
 #define REGISTER_NOT_FOUND -5
+#define INVALID_POINTER -6
+
+//Boolean
+#define EQUAL 1
 
 typedef struct book {
 	int size;
 	char *title;
 	char *author;
 	char *publisher;
-	char *language;
 	int year;
+	char *language;
 	int pages;
 	float price;
 } Book;
+
+typedef struct index
+{
+	char *field;
+	int RNN;
+}Index;
+
+typedef struct list
+{
+	int byte;
+	int next;
+}List;
+
 
 /* Inicializa o arquivo de registros
  * Se o arquivo estiver vazio, a função inicializa o cabeçalho

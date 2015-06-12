@@ -120,13 +120,15 @@ int readBookData(Book *book_reg) {
 	book_reg->publisher = readString();
 	book_reg->size += strlen(book_reg->publisher);
 
-	printf("Lingua: ");
-	book_reg->language = readString();
-	book_reg->size += strlen(book_reg->language);
-
 	printf("Ano: ");
 	scanf("%d", &book_reg->year);
 	book_reg->size += sizeof(int);
+
+	getchar();
+
+	printf("Lingua: ");
+	book_reg->language = readString();
+	book_reg->size += strlen(book_reg->language);
 
 	printf("Numero de Paginas: ");
 	scanf("%d", &book_reg->pages);

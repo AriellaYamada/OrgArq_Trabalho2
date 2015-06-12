@@ -43,8 +43,8 @@ long int findOffset(FILE *book_file) {
 	return offset;
 }
 
-int addBook (FILE *book_file, Book *book_data) {
-
+int addBook (FILE *book_file, Book *book_data) 
+{
 	if (book_file == NULL)
 		return INVALID_FILE;
 
@@ -52,9 +52,12 @@ int addBook (FILE *book_file, Book *book_data) {
 
 	long int offset = findOffset(book_file);
 
-	if (offset == -1) {
+	if (offset == -1) 
+	{
 		fseek(book_file, 0, SEEK_END);
-	} else {
+	}
+	else 
+	{
 		fseek(book_file, offset, SEEK_SET);
 	}
 
@@ -79,6 +82,8 @@ int addBook (FILE *book_file, Book *book_data) {
 	fwrite(&reg, book_data->size * sizeof(char), 1, book_file);
 	//Escreve o ano no arquivo
 	fwrite(&book_data->year, sizeof(int), 1, book_file);
+	//Escreve o número de páginas do livro no arquivo
+	fwrite(&book_data->pages, sizeof(int), 1, book_file);
 	//Escreve o preco do livro no arquivo
 	fwrite(&book_data->price, sizeof(float), 1, book_file);
 
@@ -92,8 +97,8 @@ int addBook (FILE *book_file, Book *book_data) {
 	return SUCCESS;
 }
 
-int readRegister(FILE *book_file, Book *book_data) {
-
+int readRegister(FILE *book_file, Book *book_data) 
+{
 	int size_field = 0, reg_size;
 	char reg[2];
 
@@ -104,7 +109,8 @@ int readRegister(FILE *book_file, Book *book_data) {
 		return INVALID_REGISTER;
 
 	//Leitura do Titulo
-	while(reg[0] != '|') {
+	while(reg[0] != '|')
+	{
 		book_data->title = (char *) realloc (book_data->title, (size_field + 1) * sizeof(char));
 		book_data->title[size_field] = reg[0];
 		size_field++;
@@ -112,7 +118,8 @@ int readRegister(FILE *book_file, Book *book_data) {
 	}
 	//Leitura do Autor
 	size_field = 0;
-	while(reg[0] != '|') {
+	while(reg[0] != '|') 
+	{
 		book_data->author = (char *) realloc (book_data->author, (size_field + 1) * sizeof(char));
 		book_data->author[size_field] = reg[0];
 		size_field++;
@@ -120,7 +127,8 @@ int readRegister(FILE *book_file, Book *book_data) {
 	}
 	//Leitura da Editora
 	size_field = 0;
-	while(reg[0] != '|') {
+	while(reg[0] != '|') 
+	{
 		book_data->publisher = (char *) realloc (book_data->publisher, (size_field + 1) * sizeof(char));
 		book_data->publisher[size_field] = reg[0];
 		size_field++;
@@ -128,7 +136,8 @@ int readRegister(FILE *book_file, Book *book_data) {
 	}
 	//Leitura da Lingua
 	size_field = 0;
-	while(reg[0] != '|') {
+	while(reg[0] != '|') 
+	{
 		book_data->language = (char *) realloc (book_data->language, (size_field + 1) * sizeof(char));
 		book_data->language[size_field] = reg[0];
 		size_field++;
@@ -148,7 +157,88 @@ int readRegister(FILE *book_file, Book *book_data) {
 	return SUCCESS;
 }
 
-int searchByYear (FILE *book_file, int *year) {
-	return INVALID_FILE;
+int recoverBooks (FILE *book_file, Book **books, int size)
+{
+	if(book_file == NULL)
+	{
+		return INVALID_FILE;
+	}
+
+	if(*books == NULL && books == NULL)
+	{
+		return INVALID_POINTER;
+	}
+
+	int i = 0; 
+
+	for(i = 0; i < size, i++)
+	{
+		readRegister(book_file, books[i]);
+	}
+	
+	return SUCCESS;
 }
 
+int createIndexByAuthor (Book **books, int size)
+{
+	if(*books == NULL && books == NULL)
+	{
+		return INVALID_POINTER;
+	}
+
+	Index *index = (Index*) malloc (sizeof(Index));
+	List *list = (List*) malloc (sizeof(List));
+
+	int i = 0, j = 0, cont = 0;
+
+	FILE *index_file, *list_file,
+	
+	index_file = fopen("authorindex.bin", "wb+");
+	list_file = fopen("authorindexlist.bin", "wb+");
+
+	if(index == NULL && list == NULL)
+	{
+		return INVALID_FILE;
+	}
+
+	for(i = 0; i < size; i++)
+	{
+		if(books[i]->size != EQUAL)
+		{
+			index->field = books[i]->author;
+			index->RNN = cont;
+			cont++;
+			fwrite(index, sizeof(index), 1, index_file);
+			
+			list->byte = books[i]->size;
+			list->next = -1;
+
+			for(j = i, j < size; j++)
+			{
+				if(strcmp(books[j]->autor, books[i]->autor) == 0)
+				{
+					list->next = cont;
+					fwrite(list, sizeof(list), 1, list_file);
+					cont++;
+					list->byte = books[j]->size;
+					list->next = -1;
+					books[j]->size = EQUAL;
+				}
+			}
+
+		fwrite(list, sizeof(list), 1, list_file);
+		cont++
+	}
+	return SUCCESS;
+}
+
+int createIndexByPublisher (Book **books)
+{
+	if(book_file == NULL)
+	{
+		return INVALID_FILE;
+	}
+
+	return SUCCESS;
+
+}
