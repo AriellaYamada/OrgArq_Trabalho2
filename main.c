@@ -166,6 +166,20 @@ int readBooksData (FILE *book_file, Book *book_reg) {
 	return SUCCESS;
 }
 
+//Imprime todos os livros armazenados no arquivo de registros
+void printBooks(Book *book_reg, int size) {
+	int i;
+	for (i = 0; i < size; i++) {
+		printf("\n\nTitulo: %s\n", book_reg[i].title);
+		printf("Autor: %s\n", book_reg[i].author);
+		printf("Editor: %s\n", book_reg[i].publisher);
+		printf("Idioma: %s\n", book_reg[i].language);
+		printf("Ano: %d\n", book_reg[i].year);
+		printf("Numero de paginas: %d\n", book_reg[i].pages);
+		printf("Preco: R$%.2f\n", book_reg[i].price);
+	}
+}
+
 //Libera as memória alocada para a leitura das strings
 void cleanBookReg(Book *book_reg) {
 
