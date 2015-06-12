@@ -108,6 +108,25 @@ int addBook (FILE *book_file, Book *book_data)
 	return SUCCESS;
 }
 
+char **separateFields (char *reg, int size) {
+	int p = 0, n_field = 0, size_field;
+
+	char **fields;
+
+	while(p < size) {
+		fields = (char **) realloc (fields, (n_field + 1) * sizeof(char *));
+		size_field = 0;
+		while(reg[p] != '|') {
+			fields[n_field] = (char *) realloc (fields[n_field], (size_field + 1) * sizeof(char));
+			fields[n_field][size_field] = reg[p];
+			size_field++;
+			p++;
+		}
+		n_field++;
+		p++;
+	}
+}
+
 int readRegister(FILE *book_file, Book *book_data) 
 {
 	int size_field = 0, reg_size;
