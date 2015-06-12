@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define SEPARATORS 7
+#define SEPARATORS 4
 
 // Define a code for each possible error
 #define SUCCESS 0
@@ -19,8 +19,8 @@ typedef struct book {
 	char *title;
 	char *author;
 	char *publisher;
-	int year;
 	char *language;
+	int year;
 	int pages;
 	float price;
 } Book;
