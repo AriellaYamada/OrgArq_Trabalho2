@@ -179,12 +179,25 @@ int recoverBooks (FILE *book_file, Book **books, int size)
 	return SUCCESS;
 }
 
-int createIndexByAuthor (Book **books, int size)
+int getNumberOfRegisters(FILE *file)
 {
-	if(*books == NULL && books == NULL)
-	{
-		return INVALID_POINTER;
-	}
+	int size;
+	fread(size, sizeof(int), 1, file);
+	return size;
+}
+
+Book **createBooklList(int size)
+{
+	Book **b;
+	b = (Book**) malloc (sizeof(Book*)*size);
+
+	return b;
+}
+
+int createIndexByAuthor(FILE *book_file)
+{
+	int size = getNumberOfRegisters(book_file);
+	Book **books = createBooklList(size);
 
 	Index *index = (Index*) malloc (sizeof(Index));
 	List *list = (List*) malloc (sizeof(List));
@@ -226,8 +239,9 @@ int createIndexByAuthor (Book **books, int size)
 				}
 			}
 
-		fwrite(list, sizeof(list), 1, list_file);
-		cont++
+			fwrite(list, sizeof(list), 1, list_file);
+			cont++;
+		}
 	}
 	return SUCCESS;
 }
