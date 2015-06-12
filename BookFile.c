@@ -4,6 +4,7 @@
 int createBookFile (FILE *book_file) {
 	long int size;
 	long int stack_top = -1;
+	int n_reg = 0;
 
 	// Verifica se o ponteiro para arquivo é válido
 	if (book_file == NULL)
@@ -16,12 +17,13 @@ int createBookFile (FILE *book_file) {
 	// Se o arquivo estiver vazio, inicializa o topo da pilha com -1
 	if (size == 0) {
 		fwrite(&stack_top, sizeof(long int), 1, book_file);
+		fwrite(&n_reg, sizeof(int), 1, book_file);
 	}
 
 	return SUCCESS;
 }
 
-long int findOffset(FILE *book_file) {
+long int findOffset(FILE *book_file, int enter_regsize) {
 	long int offset = -1, aux_offset;
 	int reg_size, longest_reg = 0;
 
@@ -40,7 +42,10 @@ long int findOffset(FILE *book_file) {
 		fread(&aux_offset, sizeof(long int), 1, book_file);
 	}
 
-	return offset;
+	if (enter_regsize < longest_reg)
+		return offset;
+	else
+		return -1;
 }
 
 int addBook (FILE *book_file, Book *book_data) 
@@ -50,7 +55,16 @@ int addBook (FILE *book_file, Book *book_data)
 
 	char *reg, aux[20];
 
-	long int offset = findOffset(book_file);
+	//Incrementa o numero de registros armazenados no arquivo
+	int n_reg;
+	fseek(book_file, sizeof(long int), SEEK_SET);
+	fread(&n_reg, sizeof(int), 1, book_file);
+	fseek(book_file, sizeof(long int), SEEK_SET);
+	n_reg++;
+	fwrite(&n_reg, sizeof(int), 1, book_file);
+
+	//Encontra a posicao para armazenar o registro
+	long int offset = findOffset(book_file, book_data->size);
 
 	if (offset == -1) {
 		fseek(book_file, 0, SEEK_END);
@@ -209,7 +223,7 @@ int readRegister(FILE *book_file, Book *book_data)
 	return SUCCESS;
 }
 
-int recoverBooks (FILE *book_file, Book **books, int size)
+int recoverBooks (FILE *book_file, Book **books)
 {
 	if(book_file == NULL)
 	{
@@ -221,10 +235,12 @@ int recoverBooks (FILE *book_file, Book **books, int size)
 		return INVALID_POINTER;
 	}
 
-	int i = 0; 
+	int i = 0, size = 0;
 
-	for(i = 0; i < size, i++)
-	{
+	fseek(book_file, sizeof(long int), SEEK_SET);
+	fread(&size, sizeof(int), 1, book_file); 
+
+	for(i = 0; i < size; i++) {
 		readRegister(book_file, books[i]);
 	}
 	
