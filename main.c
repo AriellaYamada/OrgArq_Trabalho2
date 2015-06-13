@@ -89,15 +89,15 @@ void printBooks(Book **book_reg, int size) {
 
 char *readString() {
 
-	char *string = NULL, c[2];
+	char *string = NULL, c;
 	int size = 0;
 
-	scanf("%c", c);
-	while (strcmp(c, "\n") != 0) {
+	scanf("%c", &c);
+	while (c != '\n') {
 		string = (char *) realloc (string, (size + 1) * sizeof(char));
-		string[size] = c[0];
+		string[size] = c;
 		size++;
-		scanf("%c", c);
+		scanf("%c", &c);
 	}
 	string = (char *) realloc (string, (size + 1) * sizeof(char));
 	string[size] = '\0';
