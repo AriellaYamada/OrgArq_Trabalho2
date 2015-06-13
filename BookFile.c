@@ -24,22 +24,22 @@ int createBookFile (FILE *book_file) {
 }
 
 long int findOffset(FILE *book_file, int enter_regsize) {
-	long int offset = -1, aux_offset;
+	long int offset = -1, stack_top;
 	int reg_size, longest_reg = 0;
 
 	//Le o topo da pilha de excluidos
 	fseek(book_file, 0, SEEK_SET);
-	fread(&aux_offset, sizeof(long int), 1, book_file);
+	fread(&stack_top, sizeof(long int), 1, book_file);
 
-	while (aux_offset != -1) {
-		fseek(book_file, aux_offset, SEEK_SET);
+	while (stack_top != -1) {
+		fseek(book_file, stack_top, SEEK_SET);
 		fread(&reg_size, sizeof(int), 1, book_file);
 		if (reg_size > longest_reg) {
 			longest_reg = reg_size;
-			offset = aux_offset;
+			offset = stack_top;
 		}
-		fseek(book_file, aux_offset + sizeof(int), SEEK_SET);
-		fread(&aux_offset, sizeof(long int), 1, book_file);
+		fseek(book_file, stack_top + sizeof(int), SEEK_SET);
+		fread(&stack_top, sizeof(long int), 1, book_file);
 	}
 
 	if (enter_regsize < longest_reg)
@@ -56,7 +56,7 @@ int addBook (FILE *book_file, Book *book_data)
 	char *reg, aux[20];
 
 	//Incrementa o numero de registros armazenados no arquivo
-	int n_reg;
+	int n_reg, string_size;
 	fseek(book_file, sizeof(long int), SEEK_SET);
 	fread(&n_reg, sizeof(int), 1, book_file);
 	fseek(book_file, sizeof(long int), SEEK_SET);
@@ -74,10 +74,10 @@ int addBook (FILE *book_file, Book *book_data)
 
 	//Escreve o tamanho do registro no arquivo
 	fwrite(&book_data->size, sizeof(int), 1, book_file);
+	
+	string_size =  (book_data->size - (2 * sizeof(int) + sizeof(float)));
 
-	int reg_size = book_data->size - (2 * sizeof(int)) - sizeof(float) + SEPARATORS; 
-
-	reg = (char *) malloc ((book_data->size - (2 * sizeof(int) - sizeof(float))) * sizeof(char *));
+	reg = (char *) malloc (string_size * sizeof(char));
 
 	//Concatena todos os campos de string em uma 'palavra'
 	strcat(reg, book_data->title);
@@ -90,7 +90,7 @@ int addBook (FILE *book_file, Book *book_data)
 	strcat(reg, "|");
 
 	//Escreve a concatenacao no arquivo
-	fwrite(&reg, book_data->size * sizeof(char), 1, book_file);
+	fwrite(&reg, string_size * sizeof(char), 1, book_file);
 	//Escreve o ano no arquivo
 	fwrite(&book_data->year, sizeof(int), 1, book_file);
 	//Escreve o número de páginas do livro no arquivo
