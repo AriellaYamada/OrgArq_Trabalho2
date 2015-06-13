@@ -75,9 +75,9 @@ int addBook (FILE *book_file, Book *book_data)
 	//Escreve o tamanho do registro no arquivo
 	fwrite(&book_data->size, sizeof(int), 1, book_file);
 
-	int reg_size = book_data->size - (2 * sizeof(int)) - sizeof(float) + SEPARATORS; 
+	int reg_size = book_data->size - (2 * sizeof(int)) - sizeof(float); 
 
-	reg = (char *) malloc ((book_data->size - (2 * sizeof(int) - sizeof(float))) * sizeof(char *));
+	reg = (char *) malloc (reg_size * sizeof(char *));
 
 	//Concatena todos os campos de string em uma 'palavra'
 	strcat(reg, book_data->title);
@@ -131,14 +131,30 @@ char **separateFields (char *reg, int size) {
 
 int readRegister(FILE *book_file, Book *book_reg) 
 {
-	int size_field = 0, reg_size;
+	int size_field = 0, reg_size, i = 0;
+	char c, *reg;
 
 	fread(&reg_size, sizeof(int), 1, book_file);
 
+	/*
 	printf("reg_size: %d %lu\n", reg_size, STRINGREG_SIZE(reg_size));
 	char *reg = (char *) malloc (STRINGREG_SIZE(reg_size) * sizeof(char));
+	//char reg[STRINGREG_SIZE(reg_size)];
 	printf("teste\n");
-	fread(&reg, sizeof(char), STRINGREG_SIZE(reg_size), book_file);
+	fread(reg, sizeof(char), STRINGREG_SIZE(reg_size), book_file);
+
+	printf("%s\n", reg);
+	*/
+
+	while (i < STRINGREG_SIZE(reg_size)) {
+		printf("i: %d\n", i);
+		reg = (char *) realloc (reg, (i + 1) * sizeof(char));
+		fread(&reg[i], sizeof(char), 1, book_file);
+		printf("%c\n", reg[i]);
+		i++;
+	}
+	reg = (char *) realloc (reg, (i + 1) * sizeof(char));
+	reg[i] = '\0';
 
 	printf("%s\n", reg);
 
@@ -170,7 +186,7 @@ int readRegister(FILE *book_file, Book *book_reg)
 
 
 	free(fields);
-	free(reg);
+	//free(reg);
 
 	return SUCCESS;
 }
