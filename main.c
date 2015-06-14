@@ -4,7 +4,7 @@
 #include "BookFile.h"
 
 void print_menu();
-void printBooks(Book **, int);
+void printBooks(Book *, int);
 int readBookData(Book *);
 int readBooksData(FILE *, Book *);
 int getYear();
@@ -12,7 +12,7 @@ void cleanBookReg(Book *);
 
 int main () {
 	FILE *book_file;
-	Book *book_reg, **book_list;
+	Book *book_reg;
 	int exit_menu = 0, n_reg;
 	char option;
 	int error_flag;
@@ -47,11 +47,11 @@ int main () {
 
 			case '3':
 				printf("case 3\n");
-				error_flag = recoverBooks (book_file, &book_list, &n_reg);
-				printf("if error_flag \n");
+				error_flag = recoverBooks (book_file, book_reg, &n_reg);
+				//printf("if error_flag \n");
 				if (error_flag ==  SUCCESS) {
-					printBooks(book_list, n_reg);
-					cleanBookList(&book_list, &n_reg);
+					printBooks(book_reg, n_reg);
+					cleanBookList(book_reg, &n_reg);
 				}
 				break;
 		}
@@ -74,16 +74,16 @@ void print_menu() {
 }
 
 //Imprime todos os livros armazenados no arquivo de registros
-void printBooks(Book **book_reg, int size) {
+void printBooks(Book *book_reg, int size) {
 	int i;
 	for (i = 0; i < size; i++) {
-		printf("\n\nTitulo: %s\n", book_reg[i]->title);
-		printf("Autor: %s\n", book_reg[i]->author);
-		printf("Editor: %s\n", book_reg[i]->publisher);
-		printf("Idioma: %s\n", book_reg[i]->language);
-		printf("Ano: %d\n", book_reg[i]->year);
-		printf("Numero de paginas: %d\n", book_reg[i]->pages);
-		printf("Preco: R$%.2f\n", book_reg[i]->price);
+		printf("\n\nTitulo: %s\n", book_reg[i].title);
+		printf("Autor: %s\n", book_reg[i].author);
+		printf("Editor: %s\n", book_reg[i].publisher);
+		printf("Idioma: %s\n", book_reg[i].language);
+		printf("Ano: %d\n", book_reg[i].year);
+		printf("Numero de paginas: %d\n", book_reg[i].pages);
+		printf("Preco: R$%.2f\n", book_reg[i].price);
 	}
 }
 
