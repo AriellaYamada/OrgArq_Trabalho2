@@ -126,34 +126,7 @@ char **separateFields (char *reg) {
 
 int readRegister(FILE *book_file, Book *book_reg) 
 {
-<<<<<<< HEAD
-	int size_field = 0, reg_size, i = 0;
-	char c, *reg;
 
-	fread(&reg_size, sizeof(int), 1, book_file);
-
-	/*
-	printf("reg_size: %d %lu\n", reg_size, STRINGREG_SIZE(reg_size));
-	char *reg = (char *) malloc (STRINGREG_SIZE(reg_size) * sizeof(char));
-	//char reg[STRINGREG_SIZE(reg_size)];
-	printf("teste\n");
-	fread(reg, sizeof(char), STRINGREG_SIZE(reg_size), book_file);
-
-	printf("%s\n", reg);
-	*/
-
-	while (i < STRINGREG_SIZE(reg_size)) {
-		printf("i: %d\n", i);
-		reg = (char *) realloc (reg, (i + 1) * sizeof(char));
-		fread(&reg[i], sizeof(char), 1, book_file);
-		printf("%c\n", reg[i]);
-		i++;
-	}
-	reg = (char *) realloc (reg, (i + 1) * sizeof(char));
-	reg[i] = '\0';
-
-	printf("%s\n", reg);
-=======
 	int size_field = 0, reg_size, string_size, i;
 	char *reg, c;
 	char **fields;
@@ -162,7 +135,6 @@ int readRegister(FILE *book_file, Book *book_reg)
 	string_size = (reg_size - (2 * sizeof(int) + sizeof(float)));
 	reg = (char *) malloc (string_size * sizeof(char));
 	fread(reg, string_size, 1, book_file);
->>>>>>> marciodebug
 
 	if (reg[string_size - 1] == '*')
 		return INVALID_REGISTER;
