@@ -126,6 +126,7 @@ char **separateFields (char *reg) {
 
 int readRegister(FILE *book_file, Book *book_reg) 
 {
+
 	int size_field = 0, reg_size, string_size, i;
 	char *reg, c;
 	char **fields;
@@ -170,7 +171,7 @@ int readRegister(FILE *book_file, Book *book_reg)
 	fread(&c, sizeof(char), 1, book_file);
 
 	free(fields);
-	free(reg);
+	//free(reg);
 
 	return SUCCESS;
 }
