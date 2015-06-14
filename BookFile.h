@@ -76,8 +76,6 @@ int recoverBooks (FILE *, Book **, int *); //LUCAS
  * Salva o livro de rrn desejado na variáve do tipo Book
  */
 
- int searchByYear (FILE *, int *); //ARIELLA
-
 /* Remove logicamente um registro a partir de seu RRN
  * Atualiza o topo da pilha
  */

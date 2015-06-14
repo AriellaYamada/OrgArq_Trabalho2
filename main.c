@@ -5,6 +5,7 @@
 
 void print_menu();
 void printBooks(Book *, int);
+void searchByYear(Book *book_reg, int size, int year);
 int readBookData(Book *);
 int readBooksData(FILE *, Book *);
 int getYear();
@@ -46,14 +47,21 @@ int main () {
 				error_flag = readBooksData(book_file, book_reg);
 				break;
 
-			case '3':
+			case '3':	// RECUPERACAO DOS REGISTROS 
 				error_flag = recoverBooks (book_file, &book_reg, &n_reg);
-				//printf("if error_flag \n");
 				if (error_flag ==  SUCCESS) {
 					printBooks(book_reg, n_reg);
 					cleanBookList(book_reg, &n_reg);
 				}
 				break;
+			case '4':	// BUSCA POR ANO
+				error_flag = recoverBooks(book_file, &book_reg, &n_reg);
+				if (error_flag == SUCCESS) {
+					int year = getYear();
+					searchByYear(book_reg, n_reg, year);
+					cleanBookList(book_reg, &n_reg);
+				}
+
 		}
 	}
 
@@ -68,9 +76,7 @@ void print_menu() {
 	printf("1 - CADASTRO DE LIVRO\n");
 	printf("2 - CADASTRO EM LOTE DE LIVROS\n");
 	printf("3 - LISTAR LIVROS CADASTRADOS\n");
-	printf("4 - BUSCAR LIVRO\n");
-	printf("5 - BUSCAR LIVROS POR ANO\n");
-	printf("6 - REMOVER LIVRO\n");
+	printf("4 - BUSCAR LIVROS POR ANO\n");
 }
 
 //Imprime todos os livros armazenados no arquivo de registros
@@ -85,6 +91,26 @@ void printBooks(Book *book_reg, int size) {
 		printf("Numero de paginas: %d\n", book_reg[i].pages);
 		printf("Preco: R$%.2f\n", book_reg[i].price);
 		printf("\n");
+	}
+}
+
+void printBook(Book book_reg) {
+	printf("\nTitulo: %s\n", book_reg.title);
+	printf("Autor: %s\n", book_reg.author);
+	printf("Editor: %s\n", book_reg.publisher);
+	printf("Idioma: %s\n", book_reg.language);
+	printf("Ano: %d\n", book_reg.year);
+	printf("Numero de paginas: %d\n", book_reg.pages);
+	printf("Preco: R$%.2f\n", book_reg.price);
+	printf("\n");
+}
+
+void searchByYear(Book *book_reg, int size, int year) {
+	int i;
+	for (int i = 0; i < size; ++i)
+	{
+		if(book_reg[i].year == year)
+			printBook(book_reg[i]);
 	}
 }
 
@@ -172,6 +198,16 @@ int readBooksData (FILE *book_file, Book *book_reg) {
 	} while(end_flag != 1);
 
 	return SUCCESS;
+}
+
+int getYear() {
+	int year;
+	printf("_______________________________\n\n");
+	printf("Ano: ");
+	scanf("%d", &year);
+	getchar();
+
+	return year;
 }
 
 //Libera as memória alocada para a leitura das strings
