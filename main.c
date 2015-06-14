@@ -5,16 +5,17 @@
 
 void print_menu();
 void printBooks(Book *, int);
+void searchByYear(Book *book_reg, int size, int year);
 int readBookData(Book *);
 int readBooksData(FILE *, Book *);
-int getRRN();
 int getYear();
 void cleanBookReg(Book *);
+int cleanBookList (Book *, int *); //ARIELLA
 
 int main () {
 	FILE *book_file;
 	Book *book_reg;
-	int exit_menu = 0, reg_number, rrn, year;
+	int exit_menu = 0, n_reg;
 	char option;
 	int error_flag;
 
@@ -22,8 +23,7 @@ int main () {
 	if (book_file == NULL)
 		book_file = fopen("books.reg", "w+");
 	createBookFile(book_file);
-	book_reg = (Book*) malloc(sizeof(Book));
-	reg_number = 1;
+	book_reg = (Book *) malloc(sizeof(Book));
 
 	while (exit_menu != 1) {
 		print_menu();
@@ -47,6 +47,21 @@ int main () {
 				error_flag = readBooksData(book_file, book_reg);
 				break;
 
+			case '3':	// RECUPERACAO DOS REGISTROS 
+				error_flag = recoverBooks (book_file, &book_reg, &n_reg);
+				if (error_flag ==  SUCCESS) {
+					printBooks(book_reg, n_reg);
+					cleanBookList(book_reg, &n_reg);
+				}
+				break;
+			case '4':	// BUSCA POR ANO
+				error_flag = recoverBooks(book_file, &book_reg, &n_reg);
+				if (error_flag == SUCCESS) {
+					int year = getYear();
+					searchByYear(book_reg, n_reg, year);
+					cleanBookList(book_reg, &n_reg);
+				}
+
 		}
 	}
 
@@ -61,36 +76,55 @@ void print_menu() {
 	printf("1 - CADASTRO DE LIVRO\n");
 	printf("2 - CADASTRO EM LOTE DE LIVROS\n");
 	printf("3 - LISTAR LIVROS CADASTRADOS\n");
-	printf("4 - BUSCAR LIVRO\n");
-	printf("5 - BUSCAR LIVROS POR ANO\n");
-	printf("6 - REMOVER LIVRO\n");
+	printf("4 - BUSCAR LIVROS POR ANO\n");
 }
 
+//Imprime todos os livros armazenados no arquivo de registros
 void printBooks(Book *book_reg, int size) {
 	int i;
 	for (i = 0; i < size; i++) {
-		printf("*****************************\n");
-		printf("Titulo: %s\n", book_reg[i].title);
+		printf("\nTitulo: %s\n", book_reg[i].title);
 		printf("Autor: %s\n", book_reg[i].author);
 		printf("Editor: %s\n", book_reg[i].publisher);
+		printf("Idioma: %s\n", book_reg[i].language);
 		printf("Ano: %d\n", book_reg[i].year);
-		printf("Lingua: %s\n", book_reg[i].language);
-		printf("Numero de Paginas: %d\n", book_reg[i].pages);
-		printf("Preco: %.2f\n\n", book_reg[i].price);
+		printf("Numero de paginas: %d\n", book_reg[i].pages);
+		printf("Preco: R$%.2f\n", book_reg[i].price);
+		printf("\n");
+	}
+}
+
+void printBook(Book book_reg) {
+	printf("\nTitulo: %s\n", book_reg.title);
+	printf("Autor: %s\n", book_reg.author);
+	printf("Editor: %s\n", book_reg.publisher);
+	printf("Idioma: %s\n", book_reg.language);
+	printf("Ano: %d\n", book_reg.year);
+	printf("Numero de paginas: %d\n", book_reg.pages);
+	printf("Preco: R$%.2f\n", book_reg.price);
+	printf("\n");
+}
+
+void searchByYear(Book *book_reg, int size, int year) {
+	int i;
+	for (int i = 0; i < size; ++i)
+	{
+		if(book_reg[i].year == year)
+			printBook(book_reg[i]);
 	}
 }
 
 char *readString() {
 
-	char *string = NULL, c[2];
+	char *string = NULL, c;
 	int size = 0;
 
-	scanf("%c", c);
-	while (strcmp(c, "\n") != 0) {
+	scanf("%c", &c);
+	while (c != '\n') {
 		string = (char *) realloc (string, (size + 1) * sizeof(char));
-		string[size] = c[0];
+		string[size] = c;
 		size++;
-		scanf("%c", c);
+		scanf("%c", &c);
 	}
 	string = (char *) realloc (string, (size + 1) * sizeof(char));
 	string[size] = '\0';
@@ -120,15 +154,13 @@ int readBookData(Book *book_reg) {
 	book_reg->publisher = readString();
 	book_reg->size += strlen(book_reg->publisher);
 
-	printf("Ano: ");
-	scanf("%d", &book_reg->year);
-	book_reg->size += sizeof(int);
-
-	getchar();
-
 	printf("Lingua: ");
 	book_reg->language = readString();
 	book_reg->size += strlen(book_reg->language);
+
+	printf("Ano: ");
+	scanf("%d", &book_reg->year);
+	book_reg->size += sizeof(int);
 
 	printf("Numero de Paginas: ");
 	scanf("%d", &book_reg->pages);
@@ -168,6 +200,16 @@ int readBooksData (FILE *book_file, Book *book_reg) {
 	return SUCCESS;
 }
 
+int getYear() {
+	int year;
+	printf("_______________________________\n\n");
+	printf("Ano: ");
+	scanf("%d", &year);
+	getchar();
+
+	return year;
+}
+
 //Libera as memória alocada para a leitura das strings
 void cleanBookReg(Book *book_reg) {
 
@@ -175,4 +217,18 @@ void cleanBookReg(Book *book_reg) {
 	free(book_reg->author);
 	free(book_reg->publisher);
 	free(book_reg->language);
+}
+
+int cleanBookList (Book *books, int *size) {
+	int i;
+	if (books == NULL)
+		return INVALID_REGISTER;
+
+	for(i = 0; i < *size; i++) {
+		free(books[i].title);
+		free(books[i].author);
+		free(books[i].publisher);
+		free(books[i].language);
+	}
+	return SUCCESS;
 }

@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define SEPARATORS 7
+#define SEPARATORS 5
 
 // Define a code for each possible error
 #define SUCCESS 0
@@ -14,6 +14,8 @@
 #define INVALID_ARGUMENT -4
 #define REGISTER_NOT_FOUND -5
 #define INVALID_POINTER -6
+#define REGISTERS_OFFSET (sizeof(long int) + sizeof(int))
+#define STRINGREG_SIZE(size) (size - REGISTERS_OFFSET)
 
 //Boolean
 #define EQUAL 1
@@ -23,8 +25,8 @@ typedef struct book {
 	char *title;
 	char *author;
 	char *publisher;
-	int year;
 	char *language;
+	int year;
 	int pages;
 	float price;
 } Book;
@@ -68,13 +70,11 @@ int addBooks (FILE *, Book *, int *); //ARIELLA
  * Copia todos os dados para o vetor de registros, realocando memória se necessário
  */
 
-//int recoverBooks (FILE *, Book **, int *); //LUCAS
+int recoverBooks (FILE *, Book **, int *); //LUCAS
 
 /* Recupera um livro a partir de um rrn
  * Salva o livro de rrn desejado na variáve do tipo Book
  */
-
- int searchByYear (FILE *, int *); //ARIELLA
 
 /* Remove logicamente um registro a partir de seu RRN
  * Atualiza o topo da pilha
