@@ -199,3 +199,87 @@ int recoverBooks (FILE *book_file, Book **books, int *n_reg) {
 	
 	return SUCCESS;
 }
+
+
+
+/////////////////////
+
+
+
+int getNumberOfRegisters(FILE *file)
+{
+	int size;
+	fread(size, sizeof(int), 1, file);
+	return size;
+}
+
+Book **createBooklList(int size)
+{
+	Book **b;
+	b = (Book**) malloc (sizeof(Book*)*size);
+
+	return b;
+}
+
+int createIndexByAuthor(FILE *book_file)
+{
+	int size = getNumberOfRegisters(book_file);
+	Book **books = createBooklList(size);
+
+	Index *index = (Index*) malloc (sizeof(Index));
+	List *list = (List*) malloc (sizeof(List));
+
+	int i = 0, j = 0, cont = 0;
+
+	FILE *index_file, *list_file,
+	
+	index_file = fopen("authorindex.bin", "wb+");
+	list_file = fopen("authorindexlist.bin", "wb+");
+
+	if(index == NULL && list == NULL)
+	{
+		return INVALID_FILE;
+	}
+
+	for(i = 0; i < size; i++)
+	{
+		if(books[i]->size != EQUAL)
+		{
+			index->field = books[i]->author;
+			index->RNN = cont;
+			cont++;
+			fwrite(index, sizeof(index), 1, index_file);
+			
+			list->byte = books[i]->size;
+			list->next = -1;
+
+			for(j = i, j < size; j++)
+			{
+				if(strcmp(books[j]->autor, books[i]->autor) == 0)
+				{
+					list->next = cont;
+					fwrite(list, sizeof(list), 1, list_file);
+					cont++;
+					list->byte = books[j]->size;
+					list->next = -1;
+					books[j]->size = EQUAL;
+				}
+			}
+
+			fwrite(list, sizeof(list), 1, list_file);
+			cont++;
+		}
+	}
+	return SUCCESS;
+}
+
+int createIndexByPublisher (Book **books)
+{
+	if(book_file == NULL)
+	{
+		return INVALID_FILE;
+	}
+
+	return SUCCESS;
+
+}
