@@ -99,7 +99,6 @@ int addBook (FILE *book_file, Book *book_data)
 	fwrite(&book_data->pages, sizeof(int), 1, book_file);
 	//Escreve o preco do livro no arquivo
 	fwrite(&book_data->price, sizeof(float), 1, book_file);
-
 	//Escreve o separador de registro no arquivo
 	fwrite(&separator, sizeof(char), 1, book_file);
 
@@ -120,7 +119,6 @@ char **separateFields (char *reg) {
 		word = strtok(NULL, "|");
 		fields[i] = (char*) malloc(sizeof(char) * (strlen(word) + 1));
 		strcpy(fields[i], word);
-		printf("%s\n", fields[i]);
 	}
 
 	return fields;
@@ -128,7 +126,7 @@ char **separateFields (char *reg) {
 
 int readRegister(FILE *book_file, Book *book_reg) 
 {
-	int size_field = 0, reg_size, string_size;
+	int size_field = 0, reg_size, string_size, i;
 	char *reg, c;
 	char **fields;
 	fread(&reg_size, sizeof(int), 1, book_file);
@@ -136,11 +134,6 @@ int readRegister(FILE *book_file, Book *book_reg)
 	string_size = (reg_size - (2 * sizeof(int) + sizeof(float)));
 	reg = (char *) malloc (string_size * sizeof(char));
 	fread(reg, string_size, 1, book_file);
-
-	printf("reg_size: %d %d\n", reg_size, string_size);
-
-
-	printf("%s\n", reg);
 
 	if (reg[string_size - 1] == '*')
 		return INVALID_REGISTER;
@@ -179,13 +172,10 @@ int readRegister(FILE *book_file, Book *book_reg)
 	free(fields);
 	free(reg);
 
-	printf("AQUI\n");
-
 	return SUCCESS;
 }
 
-int recoverBooks (FILE *book_file, Book *books, int *n_reg) {
-	printf("recoverBooks \n");
+int recoverBooks (FILE *book_file, Book **books, int *n_reg) {
 	if(book_file == NULL) {
 		return INVALID_FILE;
 	}
@@ -193,36 +183,19 @@ int recoverBooks (FILE *book_file, Book *books, int *n_reg) {
 	int i = 0;
 	long int stack_top;
 
-	printf("percorrendo o arquivo\n");
 	fseek(book_file, 0, SEEK_SET);
 	fread(&stack_top, sizeof(long int), 1, book_file);
 	fread(n_reg, sizeof(int), 1, book_file); 
 
 	printf("%d\n", *n_reg);
-	books = (Book*) realloc (books, (*n_reg) * sizeof(Book));
+	*books = (Book*) realloc (*books, (*n_reg) * sizeof(Book));
 
 	while (i < *n_reg) {
-		printf("while\n");
 		if (readRegister(book_file, &book) == SUCCESS) {
-			books[i] = book;
-			//printf("if\n");
+			books[0][i] = book;
 			i++;
 		}	
 	}
 	
-	return SUCCESS;
-}
-
-int cleanBookList (Book *books, int *size) {
-	int i;
-	if (books == NULL)
-		return INVALID_REGISTER;
-
-	for(i = 0; i < *size; i++) {
-		free(books[i].title);
-		free(books[i].author);
-		free(books[i].publisher);
-		free(books[i].language);
-	}
 	return SUCCESS;
 }
