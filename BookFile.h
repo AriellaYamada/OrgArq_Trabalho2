@@ -5,6 +5,7 @@
 #include <stdlib.h>
 
 #define SEPARATORS 5
+#define KEY_SIZE 30
 
 // Define a code for each possible error
 #define SUCCESS 0
@@ -14,6 +15,8 @@
 #define INVALID_ARGUMENT -4
 #define REGISTER_NOT_FOUND -5
 #define INVALID_POINTER -6
+#define FILE_TOO_SMALL -7
+
 #define REGISTERS_OFFSET (sizeof(long int) + sizeof(int))
 #define STRINGREG_SIZE(size) (size - REGISTERS_OFFSET)
 
@@ -29,17 +32,18 @@ typedef struct book {
 	int year;
 	int pages;
 	float price;
+	long int offset;
 } Book;
 
 typedef struct index
 {
-	char *field;
-	int RNN;
+	char key[KEY_SIZE];
+	int list_rrn;
 }Index;
 
 typedef struct list
 {
-	int byte;
+	long int offset;
 	int next;
 }List;
 
@@ -87,12 +91,12 @@ int createIndexByPublisher (FILE *); //LUCAS
 
 /* Busca o autor desejado a partir do arquivo de indice
 */
-int searchByAuthor (FILE *, Book *); //MARLY
+//int searchByAuthor (FILE *, Book *); //MARLY
 
 
 /* Busca a editora desejada a partir do arquivo de indice
 */
-int searchByPublisher (FILE *, Book *); //MARLY
+//int searchByPublisher (FILE *, Book *); //MARLY
 
 
 /* Busca por autor e editora simultanemante

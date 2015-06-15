@@ -13,7 +13,7 @@ void cleanBookReg(Book *);
 int cleanBookList (Book *, int *); //ARIELLA
 
 int main () {
-	FILE *book_file, *author_index, *publisher_index;
+	FILE *book_file;
 	Book *book_reg;
 	int exit_menu = 0, n_reg;
 	char option;
@@ -24,10 +24,6 @@ int main () {
 	if (book_file == NULL)
 		book_file = fopen("books.reg", "w+");
 	createBookFile(book_file);
-
-	// Abre os arquivos de índice caso existam
-	author_index = fopen("author.idx", "r+");
-	publisher_index = fopen("publisher.idx", "r+");
 
 	book_reg = (Book *) malloc(sizeof(Book));
 
@@ -46,11 +42,15 @@ int main () {
 				if (error_flag == SUCCESS) {
 					addBook(book_file, book_reg);
 					cleanBookReg(book_reg);
-				}	
+				}
+				createIndexByAuthor(book_file);
+				createIndexByPublisher(book_file);
 				break;
 
 			case '2':	// CADASTRO EM LOTE DE LIVROS
 				error_flag = readBooksData(book_file, book_reg);
+				createIndexByAuthor(book_file);
+				createIndexByPublisher(book_file);
 				break;
 
 			case '3':	// RECUPERACAO DOS REGISTROS 
@@ -70,11 +70,11 @@ int main () {
 				}
 
 			case '5':	// BUSCA POR AUTOR
-				error_flag = searchByAuthor();
+				//error_flag = searchByAuthor();
 				break;
 
 			case '6':	// BUSCA POR EDITORA
-				error_flag = searchByPublisher();
+				//error_flag = searchByPublisher();
 				break;
 		}
 	}

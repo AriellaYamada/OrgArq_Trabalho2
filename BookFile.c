@@ -126,19 +126,26 @@ char **separateFields (char *reg) {
 
 int readRegister(FILE *book_file, Book *book_reg) 
 {
-
 	int size_field = 0, reg_size, string_size, i;
 	char *reg, c;
 	char **fields;
+
+	// Salva o byte offset do registro
+	book_reg->offset = ftell(book_file);
+
+	// Le o tamanho do registro
 	fread(&reg_size, sizeof(int), 1, book_file);
 
+	// calcula o tamanho dos campos de string e le
 	string_size = (reg_size - (2 * sizeof(int) + sizeof(float)));
 	reg = (char *) malloc (string_size * sizeof(char));
 	fread(reg, string_size, 1, book_file);
 
+	// verifica se foi apagado
 	if (reg[string_size - 1] == '*')
 		return INVALID_REGISTER;
 
+	// separa o campo em vetor de strings
 	fields = separateFields(reg);
 
 	//Leitura do Titulo
@@ -171,7 +178,7 @@ int readRegister(FILE *book_file, Book *book_reg)
 	fread(&c, sizeof(char), 1, book_file);
 
 	free(fields);
-	//free(reg);
+	free(reg);
 
 	return SUCCESS;
 }
@@ -206,77 +213,153 @@ int recoverBooks (FILE *book_file, Book **books, int *n_reg) {
 int getNumberOfRegisters(FILE *file)
 {
 	int size;
-	fread(size, sizeof(int), 1, file);
+	fseek(file, sizeof(long int), SEEK_SET);
+	fread(&size, sizeof(int), 1, file);
 	return size;
-}
-
-Book **createBooklList(int size)
-{
-	Book **b;
-	b = (Book**) malloc (sizeof(Book*)*size);
-
-	return b;
 }
 
 int createIndexByAuthor(FILE *book_file)
 {
-	int size = getNumberOfRegisters(book_file);
-	Book **books = createBooklList(size);
+	FILE *index_file, *list_file;
+	int n_reg, i = 0, j = 0, index_size = 0;
+	Book *books;
+	Index *index;
+	List *list;
+	char key[KEY_SIZE];
 
-	Index *index = (Index*) malloc (sizeof(Index));
-	List *list = (List*) malloc (sizeof(List));
+	n_reg = getNumberOfRegisters(book_file);
 
-	int i = 0, j = 0, cont = 0;
+	if (n_reg < 10)
+		return FILE_TOO_SMALL;
 
-	FILE *index_file, *list_file,
-	
-	index_file = fopen("authorindex.bin", "wb+");
-	list_file = fopen("authorindexlist.bin", "wb+");
 
-	if(index == NULL && list == NULL)
+	list = (List*) malloc (sizeof(List) * n_reg);
+	index = (Index*) malloc (sizeof(Index));
+	books = (Book*) malloc(sizeof(Book) * n_reg);
+
+	recoverBooks(book_file, &books, &n_reg);
+
+	// Abre os arquivos para escrita
+	index_file = fopen("author.idx", "w+");
+	list_file = fopen("author.list", "w+");
+	if(index_file == NULL && list_file == NULL)
 	{
 		return INVALID_FILE;
 	}
 
-	for(i = 0; i < size; i++)
+	for(i = 0; i < n_reg; i++)
 	{
-		if(books[i]->size != EQUAL)
-		{
-			index->field = books[i]->author;
-			index->RNN = cont;
-			cont++;
-			fwrite(index, sizeof(index), 1, index_file);
-			
-			list->byte = books[i]->size;
-			list->next = -1;
+		// Coloca a registro na lista invertida
+		strncpy(key, books[i].author, KEY_SIZE);
+		list[i].offset = books[i].offset;
+		list[i].next = -1;
 
-			for(j = i, j < size; j++)
-			{
-				if(strcmp(books[j]->autor, books[i]->autor) == 0)
-				{
-					list->next = cont;
-					fwrite(list, sizeof(list), 1, list_file);
-					cont++;
-					list->byte = books[j]->size;
-					list->next = -1;
-					books[j]->size = EQUAL;
-				}
+		// Procura no arquivo de indice se a chave já existe
+		for (j = 0; j < index_size; j++) {
+			if (strcmp(index[j].key, key) == 0) {
+				break;
 			}
+		}
 
-			fwrite(list, sizeof(list), 1, list_file);
-			cont++;
+		// Se a chave é nova
+		if (j == index_size) {
+			// Aumenta o tamanho do indice 
+			index = (Index*) realloc(index, sizeof(Index) * (++index_size));
+			// Salva a chave de busca e o rrn da lista
+			strcpy(index[j].key, key);
+			index[j].list_rrn = i;
+		}
+		else {
+			// Coloca a nova chave na lista
+			list[i].next = index[j].list_rrn;
+			index[j].list_rrn = i;
 		}
 	}
+
+	// Salva o indice e a lista em arquivo
+	for (i = 0; i < n_reg; i++)
+		fwrite(&list[i], sizeof(List), 1, list_file);
+	for (i = 0; i < index_size; i++)
+		fwrite(&index, sizeof(index), 1, index_file);
+
+	fclose(list_file);
+	fclose(index_file);
+	free(list);
+	free(index);
+	free(books);
+
 	return SUCCESS;
 }
 
-int createIndexByPublisher (Book **books)
+int createIndexByPublisher (FILE *book_file)
 {
-	if(book_file == NULL)
+	FILE *index_file, *list_file;
+	int n_reg, i = 0, j = 0, index_size = 0;
+	Book *books;
+	Index *index;
+	List *list;
+	char key[KEY_SIZE];
+
+	n_reg = getNumberOfRegisters(book_file);
+
+	if (n_reg < 10)
+		return FILE_TOO_SMALL;
+
+
+	list = (List*) malloc (sizeof(List) * n_reg);
+	index = (Index*) malloc (sizeof(Index));
+	books = (Book*) malloc(sizeof(Book) * n_reg);
+
+	recoverBooks(book_file, &books, &n_reg);
+
+	// Abre os arquivos para escrita
+	index_file = fopen("publisher.idx", "w+");
+	list_file = fopen("publisher.list", "w+");
+	if(index_file == NULL && list_file == NULL)
 	{
 		return INVALID_FILE;
 	}
 
-	return SUCCESS;
+	for(i = 0; i < n_reg; i++)
+	{
+		// Coloca a registro na lista invertida
+		strncpy(key, books[i].publisher, KEY_SIZE);
+		list[i].offset = books[i].offset;
+		list[i].next = -1;
 
+		// Procura no arquivo de indice se a chave já existe
+		for (j = 0; j < index_size; j++) {
+			if (strcmp(index[j].key, key) == 0) {
+				break;
+			}
+		}
+
+		// Se a chave é nova
+		if (j == index_size) {
+			// Aumenta o tamanho do indice 
+			index = (Index*) realloc(index, sizeof(Index) * (++index_size));
+			// Salva a chave de busca e o rrn da lista
+			strcpy(index[j].key, key);
+			index[j].list_rrn = i;
+		}
+		else {
+			// Coloca a nova chave na lista
+			list[i].next = index[j].list_rrn;
+			index[j].list_rrn = i;
+		}
+	}
+
+	// Salva o indice e a lista em arquivo
+	for (i = 0; i < n_reg; i++)
+		fwrite(&list[i], sizeof(List), 1, list_file);
+	for (i = 0; i < index_size; i++)
+		fwrite(&index, sizeof(index), 1, index_file);
+
+	fclose(list_file);
+	fclose(index_file);
+	free(list);
+	free(index);
+	free(books);
+
+	return SUCCESS;
 }
