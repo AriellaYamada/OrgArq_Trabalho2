@@ -13,16 +13,22 @@ void cleanBookReg(Book *);
 int cleanBookList (Book *, int *); //ARIELLA
 
 int main () {
-	FILE *book_file;
+	FILE *book_file, *author_index, *publisher_index;
 	Book *book_reg;
 	int exit_menu = 0, n_reg;
 	char option;
 	int error_flag;
 
+	// Abre o arquivo de dados se existor, caso contrário cria um
 	book_file = fopen("books.reg", "r+");
 	if (book_file == NULL)
 		book_file = fopen("books.reg", "w+");
 	createBookFile(book_file);
+
+	// Abre os arquivos de índice caso existam
+	author_index = fopen("author.idx", "r+");
+	publisher_index = fopen("publisher.idx", "r+");
+
 	book_reg = (Book *) malloc(sizeof(Book));
 
 	while (exit_menu != 1) {
@@ -54,6 +60,7 @@ int main () {
 					cleanBookList(book_reg, &n_reg);
 				}
 				break;
+
 			case '4':	// BUSCA POR ANO
 				error_flag = recoverBooks(book_file, &book_reg, &n_reg);
 				if (error_flag == SUCCESS) {
@@ -62,6 +69,13 @@ int main () {
 					cleanBookList(book_reg, &n_reg);
 				}
 
+			case '5':	// BUSCA POR AUTOR
+				error_flag = searchByAuthor();
+				break;
+
+			case '6':	// BUSCA POR EDITORA
+				error_flag = searchByPublisher();
+				break;
 		}
 	}
 
@@ -77,6 +91,8 @@ void print_menu() {
 	printf("2 - CADASTRO EM LOTE DE LIVROS\n");
 	printf("3 - LISTAR LIVROS CADASTRADOS\n");
 	printf("4 - BUSCAR LIVROS POR ANO\n");
+	printf("5 - BUSCAR LIVROS POR AUTOR\n");
+	printf("6 - BUSCAR LIVROS POR EDITORA\n");
 }
 
 //Imprime todos os livros armazenados no arquivo de registros
