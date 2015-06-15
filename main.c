@@ -9,6 +9,8 @@ void searchByYear(Book *book_reg, int size, int year);
 int readBookData(Book *);
 int readBooksData(FILE *, Book *);
 int getYear();
+char *getAuthor();
+char *getPublisher();
 void cleanBookReg(Book *);
 int cleanBookList (Book *, int *); //ARIELLA
 
@@ -18,6 +20,10 @@ int main () {
 	int exit_menu = 0, n_reg;
 	char option;
 	int error_flag;
+	char *key;
+
+	Index index;
+	FILE *index_file;
 
 	// Abre o arquivo de dados se existor, caso contrário cria um
 	book_file = fopen("books.reg", "r+");
@@ -44,7 +50,7 @@ int main () {
 					cleanBookReg(book_reg);
 				}
 				createIndexByAuthor(book_file);
-				createIndexByPublisher(book_file);
+				//createIndexByPublisher(book_file);
 				break;
 
 			case '2':	// CADASTRO EM LOTE DE LIVROS
@@ -70,12 +76,55 @@ int main () {
 				}
 
 			case '5':	// BUSCA POR AUTOR
-				//error_flag = searchByAuthor();
+				key = getAuthor();
+				error_flag = searchByAuthor(book_file, &book_reg, &n_reg, key);
+				free(key);
+				if (error_flag == INDEX_DONT_EXIST)
+					printf("\n\n************** O ARQUIVO AINDA NÃO POSSUI INDICES **************\n\n");
+				else {
+					printBooks(book_reg, n_reg);
+					cleanBookList(book_reg, &n_reg);
+				}
 				break;
 
 			case '6':	// BUSCA POR EDITORA
-				//error_flag = searchByPublisher();
+				error_flag = searchByPublisher(book_file, &book_reg, &n_reg);
+				if (error_flag == INDEX_DONT_EXIST)
+					printf("\n\n************** O ARQUIVO AINDA NÃO POSSUI INDICES **************\n\n");
+				else {
+					printBooks(book_reg, n_reg);
+					cleanBookList(book_reg, &n_reg);
+				}
 				break;
+
+			case '7':	// BUSCA POR AUTOR E EDITORA
+				error_flag = searchByAuthorAndPublisher(book_file, &book_reg, &n_reg);
+				if (error_flag == INDEX_DONT_EXIST)
+					printf("\n\n************** O ARQUIVO AINDA NÃO POSSUI INDICES **************\n\n");
+				else {
+					printBooks(book_reg, n_reg);
+					cleanBookList(book_reg, &n_reg);
+				}
+				break;
+
+			case '8':	// BUSCA POR AUTOR OU EDITORA
+				error_flag = searchByAuthorOrPublisher(book_file, &book_reg, &n_reg);
+				if (error_flag == INDEX_DONT_EXIST)
+					printf("\n\n************** O ARQUIVO AINDA NÃO POSSUI INDICES **************\n\n");
+				else {
+					printBooks(book_reg, n_reg);
+					cleanBookList(book_reg, &n_reg);
+				}
+				break;
+
+			case '9':
+				index_file = fopen("author.idx", "r+");
+				while(fread(&index, sizeof(Index), 1, index_file) != 0){
+					printf("%s\t%d\n", index.key, index.list_rrn);
+				}
+				fclose(index_file);
+				break;
+
 		}
 	}
 
@@ -93,6 +142,8 @@ void print_menu() {
 	printf("4 - BUSCAR LIVROS POR ANO\n");
 	printf("5 - BUSCAR LIVROS POR AUTOR\n");
 	printf("6 - BUSCAR LIVROS POR EDITORA\n");
+	printf("7 - BUSCAR LIVROS POR AUTOR E EDITORA\n");
+	printf("8 - BUSCAR LIVROS POR AUTOR OU EDITORA\n");
 }
 
 //Imprime todos os livros armazenados no arquivo de registros
@@ -224,6 +275,24 @@ int getYear() {
 	getchar();
 
 	return year;
+}
+
+char *getAuthor() {
+	char *author;
+	printf("_______________________________\n\n");
+	printf("Autor: ");
+	author = readString();
+
+	return author;
+}
+
+char *getPublisher() {
+	char *publisher;
+	printf("_______________________________\n\n");
+	printf("Editora: ");
+	publisher = readString();
+
+	return publisher;
 }
 
 //Libera as memória alocada para a leitura das strings

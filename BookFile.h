@@ -16,6 +16,8 @@
 #define REGISTER_NOT_FOUND -5
 #define INVALID_POINTER -6
 #define FILE_TOO_SMALL -7
+#define INDEX_DONT_EXIST -8
+#define NOT_FOUND 404
 
 #define REGISTERS_OFFSET (sizeof(long int) + sizeof(int))
 #define STRINGREG_SIZE(size) (size - REGISTERS_OFFSET)
@@ -91,24 +93,24 @@ int createIndexByPublisher (FILE *); //LUCAS
 
 /* Busca o autor desejado a partir do arquivo de indice
 */
-//int searchByAuthor (FILE *, Book *); //MARLY
+int searchByAuthor (FILE *, Book **, int*, char*); //MARLY
 
 
 /* Busca a editora desejada a partir do arquivo de indice
 */
-//int searchByPublisher (FILE *, Book *); //MARLY
+int searchByPublisher (FILE *, Book **, int*); //MARLY
 
 
 /* Busca por autor e editora simultanemante
 MATCHING
 */
-//int searchByAuthorAndPublisher (FILE *, char *, char *); //MARCIO
+int searchByAuthorAndPublisher (FILE *, Book**, int*); //MARCIO
 
 
 /* Busca por autor ou editora simultaneamente
 MERGING
 */
-//int searchByAuthorOrPublisher (FILE *, char *, char *); //MARCIO
+int searchByAuthorOrPublisher (FILE *, Book**, int*); //MARCIO
 
 
 //int removeByRRN (FILE *, int *); //MARCIO
