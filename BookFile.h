@@ -5,6 +5,7 @@
 #include <stdlib.h>
 
 #define SEPARATORS 5
+#define KEY_SIZE 30
 
 // Define a code for each possible error
 #define SUCCESS 0
@@ -14,6 +15,10 @@
 #define INVALID_ARGUMENT -4
 #define REGISTER_NOT_FOUND -5
 #define INVALID_POINTER -6
+#define FILE_TOO_SMALL -7
+#define INDEX_DONT_EXIST -8
+#define NOT_FOUND 404
+
 #define REGISTERS_OFFSET (sizeof(long int) + sizeof(int))
 #define STRINGREG_SIZE(size) (size - REGISTERS_OFFSET)
 
@@ -29,17 +34,18 @@ typedef struct book {
 	int year;
 	int pages;
 	float price;
+	long int offset;
 } Book;
 
 typedef struct index
 {
-	char *field;
-	int RNN;
+	char key[KEY_SIZE];
+	int list_rrn;
 }Index;
 
 typedef struct list
 {
-	int byte;
+	long int offset;
 	int next;
 }List;
 
@@ -72,47 +78,40 @@ int addBooks (FILE *, Book *, int *); //ARIELLA
 
 int recoverBooks (FILE *, Book **, int *); //LUCAS
 
-/* Recupera um livro a partir de um rrn
- * Salva o livro de rrn desejado na variáve do tipo Book
- */
-
-/* Remove logicamente um registro a partir de seu RRN
- * Atualiza o topo da pilha
- */
-
-//int createIndexByAuthor (FILE *); //LUCAS
 
 /* Inicializa um indice de livros secundário que tem como chave o autor
 *  Armazena o índice em um arquivo separado
 */
+int createIndexByAuthor (FILE *); //LUCAS
 
-//int createIndexByPublisher (FILE *); //LUCAS
 
 /* Inicializa um indice de livros secundário que tem como chave a editora
 *  Armazena o índice criado em um arquivo separado
 */
+int createIndexByPublisher (FILE *); //LUCAS
 
-//int searchByAuthor (FILE *, char *); //MARLY
 
 /* Busca o autor desejado a partir do arquivo de indice
 */
+int searchByAuthor (FILE *, Book **, int*, char*); //MARLY
 
-//int searchByPublisher (FILE *, char *); //MARLY
 
 /* Busca a editora desejada a partir do arquivo de indice
 */
+int searchByPublisher (FILE *, Book **, int*, char*); //MARLY
 
-//int searchByAuthorAndPublisher (FILE *, char *, char *); //MARCIO
 
 /* Busca por autor e editora simultanemante
 MATCHING
 */
+int searchByAuthorAndPublisher (FILE *, Book**, int*); //MARCIO
 
-//int searchByAuthorOrPublisher (FILE *, char *, char *); //MARCIO
 
 /* Busca por autor ou editora simultaneamente
 MERGING
 */
+int searchByAuthorOrPublisher (FILE *, Book**, int*); //MARCIO
+
 
 //int removeByRRN (FILE *, int *); //MARCIO
 
