@@ -127,6 +127,17 @@ int main () {
 				}
 				printError(error_flag);
 				break;
+
+			case '9':
+				key = getAuthor();
+				error_flag = removeBook(book_file, key);
+				free(key);
+				if (error_flag != SUCCESS) {
+					createIndexByAuthor(book_file);
+					createIndexByPublisher(book_file);
+				}
+				printError(error_flag);
+				break;
 		}
 	}
 
@@ -149,6 +160,7 @@ void print_menu() {
     printf("[6] Editora\n");
     printf("[7] Autor e editora\n");
     printf("[8] Autor ou editora\n");
+    printf("\n[9] Remover livro\n");
     printf("_____________________________\n\n");
 }
 

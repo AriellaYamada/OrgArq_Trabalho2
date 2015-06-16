@@ -25,12 +25,14 @@ int createBookFile (FILE *book_file) {
 
 long int findOffset(FILE *book_file, int enter_regsize) {
 	long int offset = -1, stack_top;
-	int reg_size, longest_reg = 0;
+	int reg_size, longest_reg = 0, new_size;
+	char delimitador = '#';
 
 	//Le o topo da pilha de excluidos
 	fseek(book_file, 0, SEEK_SET);
 	fread(&stack_top, sizeof(long int), 1, book_file);
 
+	// Percorre a pilha a salva o offset do maior registro
 	while (stack_top != -1) {
 		fseek(book_file, stack_top, SEEK_SET);
 		fread(&reg_size, sizeof(int), 1, book_file);
@@ -38,12 +40,23 @@ long int findOffset(FILE *book_file, int enter_regsize) {
 			longest_reg = reg_size;
 			offset = stack_top;
 		}
-		fseek(book_file, stack_top + sizeof(int), SEEK_SET);
 		fread(&stack_top, sizeof(long int), 1, book_file);
 	}
 
-	if (enter_regsize < longest_reg)
+	// Se o maior registro é maior que o mínimo pra adicionar outro registro no lugar
+	if ((enter_regsize + sizeof(int) + 2 + sizeof(long int)) < longest_reg) {
+		// Atualiza o tamanho do registro que "sobrar"
+		new_size = longest_reg - enter_regsize - (sizeof(int) + 1);
+		fseek(book_file, offset, SEEK_SET);
+		fwrite(&new_size, sizeof(int), 1, book_file);
+		// Vai até o final do registro
+		fseek(book_file, new_size, SEEK_CUR);
+		// Escreve o delimitador de fim de registro
+		fwrite(&delimitador, sizeof(char), 1, book_file);
+		// Salva o offset do novo registro
+		offset = ftell(book_file);
 		return offset;
+	}
 	else
 		return -1;
 }
@@ -141,9 +154,20 @@ int readRegister(FILE *book_file, Book *book_reg)
 	reg = (char *) malloc (string_size * sizeof(char));
 	fread(reg, string_size, 1, book_file);
 
+	//Leitura do Ano
+	fread(&book_reg->year, sizeof(int), 1, book_file);
+	//Leitura do Numero de Paginas
+	fread(&book_reg->pages, sizeof(int), 1, book_file);
+	//Leitura do Preco
+	fread(&book_reg->price, sizeof(float), 1, book_file);
+	//Leitura do separador
+	fread(&c, sizeof(char), 1, book_file);
+
 	// verifica se foi apagado
-	if (reg[string_size - 1] == '*')
+	if (reg[sizeof(long int)] == '*') {
+		//printf("Aqui\n");
 		return INVALID_REGISTER;
+	}
 
 	// separa o campo em vetor de strings
 	fields = separateFields(reg);
@@ -167,15 +191,6 @@ int readRegister(FILE *book_file, Book *book_reg)
 	book_reg->language = (char*) malloc (sizeof(char) * (strlen(fields[3]) + 1));
 	strcpy(book_reg->language, fields[3]);
 	free(fields[3]);
-
-	//Leitura do Ano
-	fread(&book_reg->year, sizeof(int), 1, book_file);
-	//Leitura do Numero de Paginas
-	fread(&book_reg->pages, sizeof(int), 1, book_file);
-	//Leitura do Preco
-	fread(&book_reg->price, sizeof(float), 1, book_file);
-	//Leitura do separador
-	fread(&c, sizeof(char), 1, book_file);
 
 	free(fields);
 	free(reg);
@@ -234,7 +249,7 @@ int createIndexByAuthor(FILE *book_file)
 
 	n_reg = getNumberOfRegisters(book_file);
 
-	if (n_reg < 10)
+	if (n_reg < N_MIN)
 		return FILE_TOO_SMALL;
 
 
@@ -291,7 +306,7 @@ int createIndexByAuthor(FILE *book_file)
 	fwrite(index, sizeof(Index) * index_size, 1, index_file);
 	// Salva o indice e a lista em arquivo
 
-	printf("list: %d, index: %d\n", n_reg, index_size);
+	//printf("list: %d, index: %d\n", n_reg, index_size);
 
 	fclose(list_file);
 	fclose(index_file);
@@ -319,7 +334,7 @@ int createIndexByPublisher (FILE *book_file)
 
 	n_reg = getNumberOfRegisters(book_file);
 
-	if (n_reg < 10)
+	if (n_reg < N_MIN)
 		return FILE_TOO_SMALL;
 
 
@@ -376,7 +391,7 @@ int createIndexByPublisher (FILE *book_file)
 	fwrite(index, sizeof(Index) * index_size, 1, index_file);
 	// Salva o indice e a lista em arquivo
 
-	printf("list: %d, index: %d\n", n_reg, index_size);
+	//printf("list: %d, index: %d\n", n_reg, index_size);
 
 	fclose(list_file);
 	fclose(index_file);
@@ -474,11 +489,15 @@ int searchByAuthor (FILE *book_file, Book **book_reg, int *n_reg, char *author) 
 	book_reg[0] = (Book*) realloc(*book_reg, sizeof(Book) * k);
 	for (i = 0; i < k; i++) {
 		fseek(book_file, offset[i], SEEK_SET);
-		if (readRegister(book_file, &book_reg[0][j]) != INVALID_REGISTER)
+		if (readRegister(book_file, &book_reg[0][j]) == SUCCESS)
 			j++;
 	}
 
 	free(offset);
+
+	if (j == 0)
+		return NOT_FOUND;
+
 	*n_reg = j;
 
 	return SUCCESS;
@@ -530,11 +549,15 @@ int searchByPublisher (FILE *book_file, Book **book_reg, int *n_reg, char *publi
 	book_reg[0] = (Book*) realloc(*book_reg, sizeof(Book) * k);
 	for (i = 0; i < k; i++) {
 		fseek(book_file, offset[i], SEEK_SET);
-		if (readRegister(book_file, &book_reg[0][j]) != INVALID_REGISTER)
+		if (readRegister(book_file, &book_reg[0][j]) == SUCCESS)
 			j++;
 	}
 
 	free(offset);
+
+	if (j == 0)
+		return NOT_FOUND;
+
 	*n_reg = j;
 
 	return SUCCESS;
@@ -690,4 +713,83 @@ int searchByAuthorOrPublisher (FILE *book_file, Book **book_reg, int *n_reg, cha
 	free(publisher_books);
 
 	return error1;
+}
+
+int chooseBook(Book *book_reg, int n_reg) {
+	int i, option;
+	printf("__________________________________\n\n");
+	printf("Escolha o livro que deseja remover\n");
+	printf("__________________________________\n\n");
+
+	// Imprime a lista com todos os livros e os numeros relativos para a remoção de cada um
+	for(i = 0; i < n_reg; i++) {
+		printf("Numero Relativo [%d]*********************************\n", i);
+		printf("\nTitulo: %s\n", book_reg[i].title);
+        printf("Autor: %s\n", book_reg[i].author);
+        printf("Editora: %s\n", book_reg[i].publisher);
+        printf("Idioma: %s\n", book_reg[i].language);
+        printf("Ano: %d\n", book_reg[i].year);
+        printf("Numero de paginas: %d\n", book_reg[i].pages);
+        printf("Preco: R$%.2f\n", book_reg[i].price);
+        printf("\n");
+	}
+
+	// Le a opção do usuário até que ele digite um numero valido
+	do {
+		printf("Numero Relativo: ");
+		scanf("%d", &option);		
+	} while (option < 0 && option >= n_reg);
+	getchar();
+
+	return option;
+}
+
+int removeBook (FILE *book_file, char *author_name) {
+	int n_books, erro, i, n_reg, reg_size, string_size;
+	long int stack_top, offset;
+	char *reg;
+
+	Book *book_reg = (Book*) malloc(sizeof(Book));
+
+	// Faz a busca no arquivo pelo autor
+	erro = searchByAuthor(book_file, &book_reg, &n_books, author_name);
+
+	// Verifica se o autor foi encontrado
+	if (erro != SUCCESS)
+		return erro;
+
+	// Pede que o usuário escolha qual dos livros deseja exluir com base um uma lista
+	i = chooseBook(book_reg, n_books);
+
+	// Atualiza o cabecalho do arquivo de dados
+	fseek(book_file, 0, SEEK_SET);
+	fread(&stack_top, sizeof(long int), 1, book_file);
+	fread(&n_reg, sizeof(int), 1, book_file);
+	n_reg--;
+	fseek(book_file, 0, SEEK_SET);
+	fwrite(&book_reg[i].offset, sizeof(long int), 1, book_file);
+	fwrite(&n_reg, sizeof(int), 1, book_file);
+
+	// Vai até o registro a ser apagado
+	fseek(book_file, book_reg[i].offset, SEEK_SET);
+
+	// Le o tamanho do registro
+	fread(&reg_size, sizeof(int), 1, book_file);
+	offset = ftell(book_file);
+
+	// calcula o tamanho dos campos de string e le
+	string_size = (reg_size - (2 * sizeof(int) + sizeof(float)));
+	reg = (char *) malloc (string_size * sizeof(char));	
+	fread(reg, string_size, 1, book_file);
+
+	// Marca o registro como apagado
+	reg[sizeof(long int)] = '*';
+	fseek(book_file, offset, SEEK_SET);
+	fwrite(reg, string_size, 1, book_file);
+
+	// Salva o próximo da pilha
+	fseek(book_file, offset, SEEK_SET);
+	fwrite(&stack_top, sizeof(long int), 1, book_file);
+
+	return SUCCESS;
 }
