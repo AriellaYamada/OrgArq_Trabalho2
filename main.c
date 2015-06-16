@@ -255,7 +255,7 @@ int readBooksData (FILE *book_file, Book *book_reg) {
 
 	int end_flag = 0;
 	do {
-		printf("Para finalisar o cadastro de livro digite: ...\n\n");
+		printf("\nPara finalizar o cadastro de livro digite: ...\n");
 		if (readBookData(book_reg) == INVALID_REGISTER)
 			return INVALID_REGISTER;
 		if(strcmp(book_reg->title, "...") == 0)
@@ -326,7 +326,7 @@ int printError(int flag) {
             printf("Argumento invalido passado\ncomo parametro.\n\n");
             break;
         case INDEX_DONT_EXIST:
-            printf("Ainda nao existem dados\nsuficientes para criar os arquivos de indice.\n\n");
+            printf("Ainda nao existem dados\nsuficientes para criar \nos arquivos de indice.\n\n");
             break;
         case NOT_FOUND:
             printf("A chave procurada nao foi\nencontrada.\n\n");
