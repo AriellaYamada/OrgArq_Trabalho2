@@ -187,11 +187,11 @@ int readBooksData (FILE *book_file, Book *book_reg) {
 
 		if (readBookData(book_reg) == INVALID_REGISTER)
 			return INVALID_REGISTER;
-
-		addBook(book_file, book_reg);
 		
 		if(strcmp(book_reg->title, "...") == 0)
 			end_flag = 1;
+		else
+			addBook(book_file, book_reg);
 
 		cleanBookReg(book_reg);	
 
