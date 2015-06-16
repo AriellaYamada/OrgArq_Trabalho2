@@ -42,7 +42,7 @@ long int findOffset(FILE *book_file, int enter_regsize) {
 		fread(&stack_top, sizeof(long int), 1, book_file);
 	}
 
-	if (enter_regsize < longest_reg)
+	if (enter_regsize <= longest_reg)
 		return offset;
 	else
 		return -1;
@@ -53,9 +53,34 @@ int addBook (FILE *book_file, Book *book_data)
 	if (book_file == NULL)
 		return INVALID_FILE;
 
-	char *reg, separator = '#';
-	int n_reg, string_size;
-	long int offset;
+	char *reg, separator = '#', c[2];
+	int n_reg, string_size, size_left = 0;
+	long int offset, new_stacktop = -1;
+
+	//Encontra a posicao para armazenar o registro
+	offset = findOffset(book_file, book_data->size);
+
+	//Caso encontre um campo vazio/que caiba o novo registro
+	if (offset != -1) {
+		//Calcula o espaço que sobra
+		fseek(book_file, offset, SEEK_SET);
+		fread(&size_left, sizeof(int), 1, book_file);
+		size_left -= (book_data->size + sizeof(int));
+		//Caso não sobre nada, faz a leitura do novo topo da pilha
+		if (size_left == 0) {
+			fread(c, sizeof(char), 1, book_file);
+			fread(&new_stacktop, sizeof(long int), 1, book_file);
+		//Caso sobre algum espaço, atualiza o tamanho do registro e mantem-se o topo da pilha
+		} else {
+			fseek(book_file, offset, SEEK_SET);
+			fwrite(&size_left, sizeof(int), 1, book_file);
+			new_stacktop = offset;
+		}
+	}
+
+	//Atualiza o topo da pilha
+	fseek(book_file, 0, SEEK_SET);
+	fwrite(&new_stacktop, sizeof(long int), 1, book_file);
 
 	//Incrementa o numero de registros armazenados no arquivo
 	fseek(book_file, sizeof(long int), SEEK_SET);
@@ -64,15 +89,13 @@ int addBook (FILE *book_file, Book *book_data)
 	n_reg++;
 	fwrite(&n_reg, sizeof(int), 1, book_file);
 
-	//Encontra a posicao para armazenar o registro
-	offset = findOffset(book_file, book_data->size);
-
+	//Posiciona a escrita no local correto no arquivo
 	if (offset == -1) {
 		fseek(book_file, 0, SEEK_END);
 	} else {
-		fseek(book_file, offset, SEEK_SET);
+		fseek(book_file, (offset + size_left), SEEK_SET);
 	}
-
+	
 	//Escreve o tamanho do registro no arquivo
 	fwrite(&book_data->size, sizeof(int), 1, book_file);
 	
@@ -188,7 +211,6 @@ int recoverBooks (FILE *book_file, Book **books, int *n_reg) {
 	fread(&stack_top, sizeof(long int), 1, book_file);
 	fread(n_reg, sizeof(int), 1, book_file); 
 
-	printf("%d\n", *n_reg);
 	*books = (Book*) realloc (*books, (*n_reg) * sizeof(Book));
 
 	while (i < *n_reg) {
@@ -196,7 +218,6 @@ int recoverBooks (FILE *book_file, Book **books, int *n_reg) {
 			books[0][i] = book;
 			i++;
 		}	
-	}
-	
+	}	
 	return SUCCESS;
 }
