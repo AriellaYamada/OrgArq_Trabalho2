@@ -249,8 +249,8 @@ int createIndexByAuthor(FILE *book_file)
 	qsort(books, n_reg, sizeof(Book), compare_author);
 
 	// Abre os arquivos para escrita
-	index_file = fopen("author.idx", "w+");
-	list_file = fopen("author.list", "w+");
+	index_file = fopen("author.idx", "w");
+	list_file = fopen("author.list", "w");
 	if(index_file == NULL || list_file == NULL)
 	{
 		return INVALID_FILE;
@@ -259,7 +259,6 @@ int createIndexByAuthor(FILE *book_file)
 	for(i = 0; i < n_reg; i++)
 	{
 		// Coloca a registro na lista invertida
-		strncpy(key, books[i].author, KEY_SIZE);
 		list[i].offset = books[i].offset;
 		list[i].next = -1;
 
@@ -273,26 +272,27 @@ int createIndexByAuthor(FILE *book_file)
 		// Verifica se a chave atual é igual a chave anterior
 		if (i > 0 && strncmp(books[i].author, books[i -1].author, KEY_SIZE) == 0){
 			// Coloca a chave na lista invertida sem adicionar ao indice
-			list[i].next = index[j].list_rrn;
-			index[j].list_rrn = i;
+			list[i].next = index[j-1].list_rrn;
+			index[j-1].list_rrn = i;
 		}
 
 		// Se a chave é nova
 		else {
+			index_size++;
 			// Aumenta o tamanho do indice 
-			index = (Index*) realloc(index, sizeof(Index) * (++index_size));
+			index = (Index*) realloc(index, sizeof(Index) * index_size);
 			// Salva a chave de busca e o rrn da lista
-			strncpy(index[j].key, key, KEY_SIZE);
+			strncpy(index[j].key, books[i].author, KEY_SIZE);
 			index[j].list_rrn = i;
 			j++;
 		} 
 	}
 
+	fwrite(list, sizeof(List) * n_reg, 1, list_file);
+	fwrite(index, sizeof(Index) * index_size, 1, index_file);
 	// Salva o indice e a lista em arquivo
-	for (i = 0; i < n_reg; i++)
-		fwrite(&list[i], sizeof(List), 1, list_file);
-	for (i = 0; i < index_size; i++)
-		fwrite(&index[i], sizeof(index), 1, index_file);
+
+	printf("list: %d, index: %d\n", n_reg, index_size);
 
 	fclose(list_file);
 	fclose(index_file);
@@ -303,11 +303,90 @@ int createIndexByAuthor(FILE *book_file)
 	return SUCCESS;
 }
 
-int createIndexByPublisher (FILE *book_file)
+int compare_publisher(const void *x,const void *y)
 {
-
+	return strcmp(((Book *)x)->publisher, ((Book *)y)->publisher);
 }
 
+int createIndexByPublisher (FILE *book_file)
+{
+	FILE *index_file, *list_file;
+	int n_reg, i = 0, j = 0, index_size = 0;
+	char key[KEY_SIZE];
+
+	Book *books;
+	Index *index;
+	List *list;
+
+	n_reg = getNumberOfRegisters(book_file);
+
+	if (n_reg < 10)
+		return FILE_TOO_SMALL;
+
+
+	list = (List*) malloc (sizeof(List) * n_reg);
+	index = (Index*) malloc (sizeof(Index));
+	books = (Book*) malloc(sizeof(Book) * n_reg);
+
+	recoverBooks(book_file, &books, &n_reg);
+
+	// Ordena os registros
+	qsort(books, n_reg, sizeof(Book), compare_publisher);
+
+	// Abre os arquivos para escrita
+	index_file = fopen("publisher.idx", "w");
+	list_file = fopen("publisher.list", "w");
+	if(index_file == NULL || list_file == NULL)
+	{
+		return INVALID_FILE;
+	}
+
+	for(i = 0; i < n_reg; i++)
+	{
+		// Coloca a registro na lista invertida
+		list[i].offset = books[i].offset;
+		list[i].next = -1;
+
+		/*// Procura no arquivo de indice se a chave já existe
+		for (j = i; j < index_size; j++) {
+			if (strcmp(index[j].key, key) == 0) {
+				break;
+			}
+		}*/
+
+		// Verifica se a chave atual é igual a chave anterior
+		if (i > 0 && strncmp(books[i].publisher, books[i -1].publisher, KEY_SIZE) == 0){
+			// Coloca a chave na lista invertida sem adicionar ao indice
+			list[i].next = index[j-1].list_rrn;
+			index[j-1].list_rrn = i;
+		}
+
+		// Se a chave é nova
+		else {
+			index_size++;
+			// Aumenta o tamanho do indice 
+			index = (Index*) realloc(index, sizeof(Index) * index_size);
+			// Salva a chave de busca e o rrn da lista
+			strncpy(index[j].key, books[i].publisher, KEY_SIZE);
+			index[j].list_rrn = i;
+			j++;
+		} 
+	}
+
+	fwrite(list, sizeof(List) * n_reg, 1, list_file);
+	fwrite(index, sizeof(Index) * index_size, 1, index_file);
+	// Salva o indice e a lista em arquivo
+
+	printf("list: %d, index: %d\n", n_reg, index_size);
+
+	fclose(list_file);
+	fclose(index_file);
+	free(list);
+	free(index);
+	free(books);
+
+	return SUCCESS;
+}
 /////////////////////////////
 
 Index *getIndex(FILE *file, int *real_size) {

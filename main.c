@@ -22,8 +22,9 @@ int main () {
 	int error_flag;
 	char *key;
 
-	Index index;
-	FILE *index_file;
+	Index *index = (Index*) malloc (sizeof(Index));
+	FILE *index_file, *list_file;
+	List *list = (List*) malloc(sizeof(List));
 
 	// Abre o arquivo de dados se existor, caso contrário cria um
 	book_file = fopen("books.reg", "r+");
@@ -50,7 +51,7 @@ int main () {
 					cleanBookReg(book_reg);
 				}
 				createIndexByAuthor(book_file);
-				//createIndexByPublisher(book_file);
+				createIndexByPublisher(book_file);
 				break;
 
 			case '2':	// CADASTRO EM LOTE DE LIVROS
@@ -118,9 +119,13 @@ int main () {
 				break;
 
 			case '9':
-				index_file = fopen("author.idx", "r+");
-				while(fread(&index, sizeof(Index), 1, index_file) != 0){
-					printf("%s\t%d\n", index.key, index.list_rrn);
+				index_file = fopen("publisher.idx", "r");
+				list_file = fopen("publisher.list", "r");
+				while(fread(index, sizeof(Index), 1, index_file) != 0){
+					printf("%s,%d\n", index->key, index->list_rrn);
+				}
+				while(fread(list, sizeof(List), 1, list_file) != 0){
+					printf("%ld,%d\n", list->offset, list->next);
 				}
 				fclose(index_file);
 				break;
