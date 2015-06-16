@@ -104,13 +104,13 @@ int searchByPublisher (FILE *, Book **, int*, char*); //MARLY
 /* Busca por autor e editora simultanemante
 MATCHING
 */
-int searchByAuthorAndPublisher (FILE *, Book**, int*); //MARCIO
+int searchByAuthorAndPublisher (FILE *, Book**, int*, char*, char*); //MARCIO
 
 
 /* Busca por autor ou editora simultaneamente
 MERGING
 */
-int searchByAuthorOrPublisher (FILE *, Book**, int*); //MARCIO
+int searchByAuthorOrPublisher (FILE *, Book**, int*, char*, char*); //MARCIO
 
 
 //int removeByRRN (FILE *, int *); //MARCIO

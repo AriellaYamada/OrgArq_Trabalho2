@@ -13,6 +13,7 @@ char *getAuthor();
 char *getPublisher();
 void cleanBookReg(Book *);
 int cleanBookList (Book *, int *); //ARIELLA
+int printError(int);
 
 int main () {
 	FILE *book_file;
@@ -20,7 +21,7 @@ int main () {
 	int exit_menu = 0, n_reg;
 	char option;
 	int error_flag;
-	char *key;
+	char *key, *key2;
 
 	Index *index = (Index*) malloc (sizeof(Index));
 	FILE *index_file, *list_file;
@@ -49,15 +50,19 @@ int main () {
 				if (error_flag == SUCCESS) {
 					addBook(book_file, book_reg);
 					cleanBookReg(book_reg);
+					createIndexByAuthor(book_file);
+					createIndexByPublisher(book_file);
 				}
-				createIndexByAuthor(book_file);
-				createIndexByPublisher(book_file);
+				printError(error_flag);
 				break;
 
 			case '2':	// CADASTRO EM LOTE DE LIVROS
 				error_flag = readBooksData(book_file, book_reg);
-				createIndexByAuthor(book_file);
-				createIndexByPublisher(book_file);
+				if (error_flag == SUCCESS) {
+					createIndexByAuthor(book_file);
+					createIndexByPublisher(book_file);
+				}
+				printError(error_flag);
 				break;
 
 			case '3':	// RECUPERACAO DOS REGISTROS 
@@ -66,6 +71,7 @@ int main () {
 					printBooks(book_reg, n_reg);
 					cleanBookList(book_reg, &n_reg);
 				}
+				printError(error_flag);
 				break;
 
 			case '4':	// BUSCA POR ANO
@@ -75,64 +81,52 @@ int main () {
 					searchByYear(book_reg, n_reg, year);
 					cleanBookList(book_reg, &n_reg);
 				}
+				printError(error_flag);
 				break;
 
 			case '5':	// BUSCA POR AUTOR
 				key = getAuthor();
 				error_flag = searchByAuthor(book_file, &book_reg, &n_reg, key);
 				free(key);
-				if (error_flag == INDEX_DONT_EXIST)
-					printf("\n\n************** O ARQUIVO AINDA NÃO POSSUI INDICES **************\n\n");
-				else {
+				if (error_flag == SUCCESS) {
 					printBooks(book_reg, n_reg);
 					cleanBookList(book_reg, &n_reg);
 				}
+				printError(error_flag);
 				break;
 
 			case '6':	// BUSCA POR EDITORA
 				key = getPublisher();
 				error_flag = searchByPublisher(book_file, &book_reg, &n_reg, key);
 				free(key);
-				if (error_flag == INDEX_DONT_EXIST)
-					printf("\n\n************** O ARQUIVO AINDA NÃO POSSUI INDICES **************\n\n");
-				else {
+				if (error_flag == SUCCESS) {
 					printBooks(book_reg, n_reg);
 					cleanBookList(book_reg, &n_reg);
 				}
+				printError(error_flag);
 				break;
 
 			case '7':	// BUSCA POR AUTOR E EDITORA
-				error_flag = searchByAuthorAndPublisher(book_file, &book_reg, &n_reg);
-				if (error_flag == INDEX_DONT_EXIST)
-					printf("\n\n************** O ARQUIVO AINDA NÃO POSSUI INDICES **************\n\n");
-				else {
+				key = getAuthor();
+				key2 = getPublisher();
+				error_flag = searchByAuthorAndPublisher(book_file, &book_reg, &n_reg, key, key2);
+				free(key);
+				free(key2);
+				if (error_flag == SUCCESS) {
 					printBooks(book_reg, n_reg);
 					cleanBookList(book_reg, &n_reg);
 				}
+				printError(error_flag);
 				break;
 
 			case '8':	// BUSCA POR AUTOR OU EDITORA
-				error_flag = searchByAuthorOrPublisher(book_file, &book_reg, &n_reg);
-				if (error_flag == INDEX_DONT_EXIST)
-					printf("\n\n************** O ARQUIVO AINDA NÃO POSSUI INDICES **************\n\n");
-				else {
+				//error_flag = searchByAuthorOrPublisher(book_file, &book_reg, &n_reg);
+				if (error_flag == SUCCESS) {
 					printBooks(book_reg, n_reg);
 					cleanBookList(book_reg, &n_reg);
 				}
+				printError(error_flag);
 				break;
-
-			case '9':
-				index_file = fopen("publisher.idx", "r");
-				list_file = fopen("publisher.list", "r");
-				while(fread(index, sizeof(Index), 1, index_file) != 0){
-					printf("%s,%d\n", index->key, index->list_rrn);
-				}
-				while(fread(list, sizeof(List), 1, list_file) != 0){
-					printf("%ld,%d\n", list->offset, list->next);
-				}
-				fclose(index_file);
-				break;
-
 		}
 	}
 
@@ -324,4 +318,31 @@ int cleanBookList (Book *books, int *size) {
 		free(books[i].language);
 	}
 	return SUCCESS;
+}
+
+int printError(int flag) {
+	if (flag == SUCCESS)
+		return 0;
+
+	printf("*****************************\n");
+	printf("            ERRO\n");
+	printf("*****************************\n\n");
+
+	switch (flag) {
+		case INVALID_FILE:
+			printf("Erro durante abertura de arquivo\n\n");
+			break;
+		case INVALID_ARGUMENT:
+			printf("Argumento invalido passado como parametro\n\n");
+			break;
+		case INDEX_DONT_EXIST:
+			printf("Ainda não existem dados suficientes para criar os arquivos de indice\n\n");
+			break;
+		case NOT_FOUND:
+			printf("A(s) chave(s) procurada(s) não foi encontrada\n\n");
+			break;
+	}
+
+	printf("*****************************\n\n");
+	return 1;
 }

@@ -537,10 +537,76 @@ int searchByPublisher (FILE *book_file, Book **book_reg, int *n_reg, char *publi
 	return SUCCESS;
 }
 
-int searchByAuthorAndPublisher (FILE *book_file, Book **book_reg, int *n_reg) {
 
+//////////////////
+int matching(Book *list_a, int size_a, Book * list_b, int size_b, Book **list_c, int *size_c) {
+	long int offset_a, offset_b;
+	int i = 0, a = 0, b = 0;
+
+	*list_c = (Book*) realloc(*list_c, sizeof(Book) * (a+b));
+
+	offset_a = list_a[a].offset;
+	offset_b = list_b[b].offset;
+
+	while(a < size_a && b < size_b) {
+		if (offset_a < offset_b)
+			a++;
+		else if (offset_a > offset_b)
+			b++;
+		else {
+			*list_c[i++] = list_a[a];
+			a++;
+			b++;
+		}
+	}
+
+	if (i == 0)
+		return NOT_FOUND;
+
+	*list_c = (Book*) realloc(*list_c, sizeof(Book) * i);
+	*size_c = i;
+
+	return SUCCESS;	
 }
 
-int searchByAuthorOrPublisher (FILE *book_file, Book **book_reg, int *n_reg) {
+int compare_offset(const void *x,const void *y)
+{
+	return ((Book *)x)->offset - ((Book *)y)->offset;
+}
+
+int searchByAuthorAndPublisher (FILE *book_file, Book **book_reg, int *n_reg, char *author, char *publisher) {
+	Book *author_books, *publisher_books;
+	int n_author, n_publisher;
+	int error1, error2;
+
+	author_books = (Book*) malloc(sizeof(Book));
+	publisher_books = (Book*) malloc(sizeof(Book));
+
+	// Faz a busca pelos dois campos separadamente
+	error1 = searchByAuthor(book_file, &author_books, &n_author, author);
+	error2 = searchByPublisher(book_file, &publisher_books, &n_publisher, publisher);
+
+	// Se alguma das buscas não encontrou nenhum resultado
+	if (error1 != SUCCESS) {
+	printf("AQUI\n");
+		
+		free(author_books);
+		free(publisher_books);
+		return error1;
+	}
+	else if (error2 != SUCCESS) {
+		free(author_books);
+		free(publisher_books);
+		return error2;
+	}
+
+	// Ordena em relação ao campos offset
+	qsort(author_books, n_author, sizeof(Book), compare_offset);
+	qsort(publisher_books, n_publisher, sizeof(Book), compare_offset);
+
+	return matching(author_books, n_author, publisher_books, n_publisher, book_reg, n_reg);
+}
+
+int searchByAuthorOrPublisher (FILE *book_file, Book **book_reg, int *n_reg, char *author, char *publisher) {
 
 }
