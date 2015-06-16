@@ -250,18 +250,20 @@ int readBookData(Book *book_reg) {
 }
 
 int readBooksData (FILE *book_file, Book *book_reg) {
-    if (book_reg == NULL)
-        return INVALID_REGISTER;
-    int end_flag = 0;
-    do {
-        printf("Para finalizar o cadastro de livros digite: ...\n\n");
-        if (readBookData(book_reg) == INVALID_REGISTER)
+	if (book_reg == NULL)
+		return INVALID_REGISTER;
+
+	int end_flag = 0;
+	do {
+		printf("Para finalisar o cadastro de livro digite: ...\n\n");
+		if (readBookData(book_reg) == INVALID_REGISTER)
 			return INVALID_REGISTER;
-        addBook(book_file, book_reg);
-        if(strcmp(book_reg->title, "...") == 0)
-            end_flag = 1;
-        cleanBookReg(book_reg);
-    } while(end_flag != 1);
+		if(strcmp(book_reg->title, "...") == 0)
+			end_flag = 1;
+		else
+			addBook(book_file, book_reg);
+		cleanBookReg(book_reg);	
+	} while(end_flag != 1);
 	return SUCCESS;
 }
 

@@ -66,9 +66,34 @@ int addBook (FILE *book_file, Book *book_data)
 	if (book_file == NULL)
 		return INVALID_FILE;
 
-	char *reg, separator = '#';
-	int n_reg, string_size;
-	long int offset;
+	char *reg, separator = '#', c[2];
+	int n_reg, string_size, size_left = 0;
+	long int offset, new_stacktop = -1;
+
+	//Encontra a posicao para armazenar o registro
+	offset = findOffset(book_file, book_data->size);
+
+	//Caso encontre um campo vazio/que caiba o novo registro
+	if (offset != -1) {
+		//Calcula o espaço que sobra
+		fseek(book_file, offset, SEEK_SET);
+		fread(&size_left, sizeof(int), 1, book_file);
+		size_left -= (book_data->size + sizeof(int));
+		//Caso não sobre nada, faz a leitura do novo topo da pilha
+		if (size_left == 0) {
+			fread(c, sizeof(char), 1, book_file);
+			fread(&new_stacktop, sizeof(long int), 1, book_file);
+		//Caso sobre algum espaço, atualiza o tamanho do registro e mantem-se o topo da pilha
+		} else {
+			fseek(book_file, offset, SEEK_SET);
+			fwrite(&size_left, sizeof(int), 1, book_file);
+			new_stacktop = offset;
+		}
+	}
+
+	//Atualiza o topo da pilha
+	fseek(book_file, 0, SEEK_SET);
+	fwrite(&new_stacktop, sizeof(long int), 1, book_file);
 
 	//Incrementa o numero de registros armazenados no arquivo
 	fseek(book_file, sizeof(long int), SEEK_SET);
@@ -77,15 +102,13 @@ int addBook (FILE *book_file, Book *book_data)
 	n_reg++;
 	fwrite(&n_reg, sizeof(int), 1, book_file);
 
-	//Encontra a posicao para armazenar o registro
-	offset = findOffset(book_file, book_data->size);
-
+	//Posiciona a escrita no local correto no arquivo
 	if (offset == -1) {
 		fseek(book_file, 0, SEEK_END);
 	} else {
-		fseek(book_file, offset, SEEK_SET);
+		fseek(book_file, (offset + size_left), SEEK_SET);
 	}
-
+	
 	//Escreve o tamanho do registro no arquivo
 	fwrite(&book_data->size, sizeof(int), 1, book_file);
 	
@@ -450,9 +473,11 @@ int searchByAuthor (FILE *book_file, Book **book_reg, int *n_reg, char *author) 
 	int index_size, list_size, i, j, k, flag = 0;
 	long int *offset = NULL;
 
+	//Busca o numero de registros
 	*n_reg = getNumberOfRegisters(book_file);
 	offset = (long int *) malloc(sizeof(long int) * (*n_reg));
 
+	//Faz a leitura nos arquivos de indice e na lista invertida
 	index_file = fopen("author.idx", "r+");
 	list_file = fopen("author.list", "r+");
 	if (index_file == NULL || list_file == NULL)
@@ -463,9 +488,11 @@ int searchByAuthor (FILE *book_file, Book **book_reg, int *n_reg, char *author) 
 
 	// Salva os offsets dos registros correspondentes a busca
 	for (i = 0; i < index_size; i++) {
+		//Faz primeiro a busca noa arquivo de indice
 		if (strncmp(index[i].key, author, KEY_SIZE) == 0) {
 			flag = 1;
 			k = 0;
+			//Caso encontre faz a busca na lista invertida até encontrar o -1
 			for (j = index[i].list_rrn; j != -1; j = list[j].next) {
 				offset[k++] = list[j].offset;
 			}
@@ -510,9 +537,11 @@ int searchByPublisher (FILE *book_file, Book **book_reg, int *n_reg, char *publi
 	int index_size, list_size, i, j, k, flag = 0;
 	long int *offset = NULL;
 
+	//Busca o numero de registros
 	*n_reg = getNumberOfRegisters(book_file);
 	offset = (long int *) malloc(sizeof(long int) * (*n_reg));
 
+	//Faz a leitura nos arquivos de indice e na lista invertida
 	index_file = fopen("publisher.idx", "r+");
 	list_file = fopen("publisher.list", "r+");
 	if (index_file == NULL || list_file == NULL)
@@ -523,9 +552,11 @@ int searchByPublisher (FILE *book_file, Book **book_reg, int *n_reg, char *publi
 
 	// Salva os offsets dos registros correspondentes a busca
 	for (i = 0; i < index_size; i++) {
+		//Faz primeiro a busca noa arquivo de indice
 		if (strncmp(index[i].key, publisher, KEY_SIZE) == 0) {
 			flag = 1;
 			k = 0;
+			//Caso encontre faz a busca na lista invertida até encontrar o -1
 			for (j = index[i].list_rrn; j != -1; j = list[j].next) {
 				offset[k++] = list[j].offset;
 			}
