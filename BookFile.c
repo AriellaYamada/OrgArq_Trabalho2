@@ -464,8 +464,10 @@ int searchByAuthor (FILE *book_file, Book **book_reg, int *n_reg, char *author) 
 	free(list);
 	free(index);
 
-	if (flag == 0)
+	if (flag == 0) {
+		free(offset);
 		return NOT_FOUND;
+	}
 
 	// Salva os registros em uma lista
 	j = 0;
@@ -518,8 +520,10 @@ int searchByPublisher (FILE *book_file, Book **book_reg, int *n_reg, char *publi
 	free(list);
 	free(index);
 
-	if (flag == 0)
+	if (flag == 0) {
+		free(offset);
 		return NOT_FOUND;
+	}
 
 	// Salva os registros em uma lista
 	j = 0;
@@ -538,35 +542,47 @@ int searchByPublisher (FILE *book_file, Book **book_reg, int *n_reg, char *publi
 
 
 //////////////////
+/* Funcão usada pela qsorte para ordenar os registros de acordo com o campo offset
+*/
+int compare_offset(const void *x,const void *y)
+{
+	return ((Book *)x)->offset - ((Book *)y)->offset;
+}
+
+/* Faz o maching da lista A e da lista B, salvando o resultado na lista C
+*/
 int matching(Book *list_a, int size_a, Book * list_b, int size_b, Book **list_c, int *size_c) {
 	int i = 0, a = 0, b = 0;
 
 	*list_c = (Book*) realloc(*list_c, sizeof(Book) * (size_a+size_b));
 
+	// Enquanto alguma das listas não acabar
 	while(a < size_a && b < size_b) {
+		// Se o offset de A for menor que o offset de B
 		if (list_a[a].offset < list_b[b].offset)
 			a++;
+		// Se o offset de A for maior que o offset de B
 		else if (list_a[a].offset > list_b[b].offset)
 			b++;
+		// Se os offser forem iguais
 		else {
+			// Salva o registro na lista de saída
 			list_c[0][i++] = list_a[a];
+			// Vai para os próximos da lista
 			a++;
 			b++;
 		}
 	}
 
+	// Se não ouve nenhum match
 	if (i == 0)
 		return NOT_FOUND;
 
+	// Trunca a lista e atualiza o tamanho
 	*list_c = (Book*) realloc(*list_c, sizeof(Book) * i);
 	*size_c = i;
 
 	return SUCCESS;	
-}
-
-int compare_offset(const void *x,const void *y)
-{
-	return ((Book *)x)->offset - ((Book *)y)->offset;
 }
 
 int searchByAuthorAndPublisher (FILE *book_file, Book **book_reg, int *n_reg, char *author, char *publisher) {
@@ -577,11 +593,11 @@ int searchByAuthorAndPublisher (FILE *book_file, Book **book_reg, int *n_reg, ch
 	author_books = (Book*) malloc(sizeof(Book));
 	publisher_books = (Book*) malloc(sizeof(Book));
 
-	// Faz a busca pelos dois campos separadamente
+	// Faz a busca pelos campos author e publisher separadamente
 	error1 = searchByAuthor(book_file, &author_books, &n_author, author);
 	error2 = searchByPublisher(book_file, &publisher_books, &n_publisher, publisher);
 
-	// Se alguma das buscas não encontrou nenhum resultado
+	// Se alguma das buscas não encontrou nenhum resultado ou não existe indice
 	if (error1 != SUCCESS) {
 		free(author_books);
 		free(publisher_books);
@@ -593,18 +609,85 @@ int searchByAuthorAndPublisher (FILE *book_file, Book **book_reg, int *n_reg, ch
 		return error2;
 	}
 
-	// Ordena em relação ao campos offset
+	// Ordena as duas listas em relação ao campos offset
 	qsort(author_books, n_author, sizeof(Book), compare_offset);
 	qsort(publisher_books, n_publisher, sizeof(Book), compare_offset);
 
+	// Faz o match das duas listas
 	error1 = matching(author_books, n_author, publisher_books, n_publisher, book_reg, n_reg);
 
 	free(author_books);
 	free(publisher_books);
-	
+
 	return error1;
 }
 
-int searchByAuthorOrPublisher (FILE *book_file, Book **book_reg, int *n_reg, char *author, char *publisher) {
+int merging(Book *list_a, int size_a, Book * list_b, int size_b, Book **list_c, int *size_c) {
+	int i = 0, a = 0, b = 0;
 
+	*list_c = (Book*) realloc(*list_c, sizeof(Book) * (size_a+size_b));
+
+	// Enquanto houverem registros
+	while(a < size_a && b < size_b) {
+		if (list_a[a].offset < list_b[b].offset)
+			list_c[0][i++] = list_a[a++];
+		else if (list_a[a].offset > list_b[b].offset)
+			list_c[0][i++] = list_b[b++];
+		else {
+			list_c[0][i++] = list_a[a++];
+			b++;
+		}
+	}
+
+	// Salva o restante da lista A na lista de saída caso a lista B tenha acabado antes
+	 while (a < size_a)
+		list_c[0][i++] = list_a[a++];
+
+	// Salva o restante da lista A na lista de saída caso a lista B tenha acabado antes
+	 while (b < size_b)
+		list_c[0][i++] = list_b[b++];
+
+	// Trunca a lista e atualiza o tamanho
+	*list_c = (Book*) realloc(*list_c, sizeof(Book) * i);
+	*size_c = i;
+
+
+	return SUCCESS;
+}
+
+int searchByAuthorOrPublisher (FILE *book_file, Book **book_reg, int *n_reg, char *author, char *publisher) {
+	Book *author_books, *publisher_books;
+	int n_author, n_publisher;
+	int error1, error2;
+
+	author_books = (Book*) malloc(sizeof(Book));
+	publisher_books = (Book*) malloc(sizeof(Book));
+
+	// Faz a busca pelos campos author e publisher separadamente
+	error1 = searchByAuthor(book_file, &author_books, &n_author, author);
+	error2 = searchByPublisher(book_file, &publisher_books, &n_publisher, publisher);
+
+	// Se alguma das buscas não encontrou nenhum resultado ou não existe indice
+	if (error1 != SUCCESS) {
+		free(author_books);
+		free(publisher_books);
+		return error1;
+	}
+	else if (error2 != SUCCESS) {
+		free(author_books);
+		free(publisher_books);
+		return error2;
+	}
+
+	// Ordena as duas listas em relação ao campos offset
+	qsort(author_books, n_author, sizeof(Book), compare_offset);
+	qsort(publisher_books, n_publisher, sizeof(Book), compare_offset);
+
+	// Faz o merging das duas listas
+	error1 = merging(author_books, n_author, publisher_books, n_publisher, book_reg, n_reg);
+
+	free(author_books);
+	free(publisher_books);
+
+	return error1;
 }

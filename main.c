@@ -116,7 +116,11 @@ int main () {
 				break;
 
 			case '8':	// BUSCA POR AUTOR OU EDITORA
-				//error_flag = searchByAuthorOrPublisher(book_file, &book_reg, &n_reg);
+				key = getAuthor();
+				key2 = getPublisher();
+				error_flag = searchByAuthorOrPublisher(book_file, &book_reg, &n_reg, key, key2);
+				free(key);
+				free(key2);
 				if (error_flag == SUCCESS) {
 					printBooks(book_reg, n_reg);
 					cleanBookList(book_reg, &n_reg);
