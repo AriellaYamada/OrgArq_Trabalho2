@@ -6,6 +6,7 @@
 
 #define SEPARATORS 5
 #define KEY_SIZE 30
+#define N_MIN 10
 
 // Define a code for each possible error
 #define SUCCESS 0
@@ -102,18 +103,17 @@ int searchByPublisher (FILE *, Book **, int*, char*); //MARLY
 
 
 /* Busca por autor e editora simultanemante
-MATCHING
 */
-int searchByAuthorAndPublisher (FILE *, Book**, int*); //MARCIO
+int searchByAuthorAndPublisher (FILE *, Book**, int*, char*, char*); //MARCIO
 
 
 /* Busca por autor ou editora simultaneamente
-MERGING
 */
-int searchByAuthorOrPublisher (FILE *, Book**, int*); //MARCIO
+int searchByAuthorOrPublisher (FILE *, Book**, int*, char*, char*); //MARCIO
 
-
-//int removeByRRN (FILE *, int *); //MARCIO
+/* Remove um livro logicamente do arquivo
+*/
+int removeBook (FILE *, char *); //MARCIO
 
 
 

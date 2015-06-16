@@ -13,6 +13,7 @@ char *getAuthor();
 char *getPublisher();
 void cleanBookReg(Book *);
 int cleanBookList (Book *, int *); //ARIELLA
+int printError(int);
 
 int main () {
 	FILE *book_file;
@@ -20,11 +21,7 @@ int main () {
 	int exit_menu = 0, n_reg;
 	char option;
 	int error_flag;
-	char *key;
-
-	Index *index = (Index*) malloc (sizeof(Index));
-	FILE *index_file, *list_file;
-	List *list = (List*) malloc(sizeof(List));
+	char *key, *key2;
 
 	// Abre o arquivo de dados se existor, caso contrário cria um
 	book_file = fopen("books.reg", "r+");
@@ -49,15 +46,19 @@ int main () {
 				if (error_flag == SUCCESS) {
 					addBook(book_file, book_reg);
 					cleanBookReg(book_reg);
+					createIndexByAuthor(book_file);
+					createIndexByPublisher(book_file);
 				}
-				createIndexByAuthor(book_file);
-				createIndexByPublisher(book_file);
+				printError(error_flag);
 				break;
 
 			case '2':	// CADASTRO EM LOTE DE LIVROS
 				error_flag = readBooksData(book_file, book_reg);
-				createIndexByAuthor(book_file);
-				createIndexByPublisher(book_file);
+				if (error_flag == SUCCESS) {
+					createIndexByAuthor(book_file);
+					createIndexByPublisher(book_file);
+				}
+				printError(error_flag);
 				break;
 
 			case '3':	// RECUPERACAO DOS REGISTROS 
@@ -66,6 +67,7 @@ int main () {
 					printBooks(book_reg, n_reg);
 					cleanBookList(book_reg, &n_reg);
 				}
+				printError(error_flag);
 				break;
 
 			case '4':	// BUSCA POR ANO
@@ -75,64 +77,67 @@ int main () {
 					searchByYear(book_reg, n_reg, year);
 					cleanBookList(book_reg, &n_reg);
 				}
+				printError(error_flag);
 				break;
 
 			case '5':	// BUSCA POR AUTOR
 				key = getAuthor();
 				error_flag = searchByAuthor(book_file, &book_reg, &n_reg, key);
 				free(key);
-				if (error_flag == INDEX_DONT_EXIST)
-					printf("\n\n************** O ARQUIVO AINDA NÃO POSSUI INDICES **************\n\n");
-				else {
+				if (error_flag == SUCCESS) {
 					printBooks(book_reg, n_reg);
 					cleanBookList(book_reg, &n_reg);
 				}
+				printError(error_flag);
 				break;
 
 			case '6':	// BUSCA POR EDITORA
 				key = getPublisher();
 				error_flag = searchByPublisher(book_file, &book_reg, &n_reg, key);
 				free(key);
-				if (error_flag == INDEX_DONT_EXIST)
-					printf("\n\n************** O ARQUIVO AINDA NÃO POSSUI INDICES **************\n\n");
-				else {
+				if (error_flag == SUCCESS) {
 					printBooks(book_reg, n_reg);
 					cleanBookList(book_reg, &n_reg);
 				}
+				printError(error_flag);
 				break;
 
 			case '7':	// BUSCA POR AUTOR E EDITORA
-				error_flag = searchByAuthorAndPublisher(book_file, &book_reg, &n_reg);
-				if (error_flag == INDEX_DONT_EXIST)
-					printf("\n\n************** O ARQUIVO AINDA NÃO POSSUI INDICES **************\n\n");
-				else {
+				key = getAuthor();
+				key2 = getPublisher();
+				error_flag = searchByAuthorAndPublisher(book_file, &book_reg, &n_reg, key, key2);
+				free(key);
+				free(key2);
+				if (error_flag == SUCCESS) {
 					printBooks(book_reg, n_reg);
 					cleanBookList(book_reg, &n_reg);
 				}
+				printError(error_flag);
 				break;
 
 			case '8':	// BUSCA POR AUTOR OU EDITORA
-				error_flag = searchByAuthorOrPublisher(book_file, &book_reg, &n_reg);
-				if (error_flag == INDEX_DONT_EXIST)
-					printf("\n\n************** O ARQUIVO AINDA NÃO POSSUI INDICES **************\n\n");
-				else {
+				key = getAuthor();
+				key2 = getPublisher();
+				error_flag = searchByAuthorOrPublisher(book_file, &book_reg, &n_reg, key, key2);
+				free(key);
+				free(key2);
+				if (error_flag == SUCCESS) {
 					printBooks(book_reg, n_reg);
 					cleanBookList(book_reg, &n_reg);
 				}
+				printError(error_flag);
 				break;
 
 			case '9':
-				index_file = fopen("publisher.idx", "r");
-				list_file = fopen("publisher.list", "r");
-				while(fread(index, sizeof(Index), 1, index_file) != 0){
-					printf("%s,%d\n", index->key, index->list_rrn);
+				key = getAuthor();
+				error_flag = removeBook(book_file, key);
+				free(key);
+				if (error_flag != SUCCESS) {
+					createIndexByAuthor(book_file);
+					createIndexByPublisher(book_file);
 				}
-				while(fread(list, sizeof(List), 1, list_file) != 0){
-					printf("%ld,%d\n", list->offset, list->next);
-				}
-				fclose(index_file);
+				printError(error_flag);
 				break;
-
 		}
 	}
 
@@ -143,41 +148,47 @@ int main () {
 }
 
 void print_menu() {
-	printf("0 - SAIR\n");
-	printf("1 - CADASTRO DE LIVRO\n");
-	printf("2 - CADASTRO EM LOTE DE LIVROS\n");
-	printf("3 - LISTAR LIVROS CADASTRADOS\n");
-	printf("4 - BUSCAR LIVROS POR ANO\n");
-	printf("5 - BUSCAR LIVROS POR AUTOR\n");
-	printf("6 - BUSCAR LIVROS POR EDITORA\n");
-	printf("7 - BUSCAR LIVROS POR AUTOR E EDITORA\n");
-	printf("8 - BUSCAR LIVROS POR AUTOR OU EDITORA\n");
+    printf("_____________________________\n\n");
+    printf("MENU\n\n");
+    printf("[0] Sair\n");
+    printf("[1] Cadastrar livro\n");
+    printf("[2] Cadastrar lote de livros\n");
+    printf("[3] Listar livros cadastrados\n\n");
+    printf("    Buscar livros por:\n\n");
+    printf("[4] Ano\n");
+    printf("[5] Autor\n");
+    printf("[6] Editora\n");
+    printf("[7] Autor e editora\n");
+    printf("[8] Autor ou editora\n");
+    printf("\n[9] Remover livro\n");
+    printf("_____________________________\n\n");
 }
 
 //Imprime todos os livros armazenados no arquivo de registros
 void printBooks(Book *book_reg, int size) {
-	int i;
-	for (i = 0; i < size; i++) {
-		printf("\nTitulo: %s\n", book_reg[i].title);
-		printf("Autor: %s\n", book_reg[i].author);
-		printf("Editor: %s\n", book_reg[i].publisher);
-		printf("Idioma: %s\n", book_reg[i].language);
-		printf("Ano: %d\n", book_reg[i].year);
-		printf("Numero de paginas: %d\n", book_reg[i].pages);
-		printf("Preco: R$%.2f\n", book_reg[i].price);
-		printf("\n");
-	}
+    int i;
+    for (i = 0; i < size; i++) {
+        printf("\nTitulo: %s\n", book_reg[i].title);
+        printf("Autor: %s\n", book_reg[i].author);
+        printf("Editora: %s\n", book_reg[i].publisher);
+        printf("Idioma: %s\n", book_reg[i].language);
+        printf("Ano: %d\n", book_reg[i].year);
+        printf("Numero de paginas: %d\n", book_reg[i].pages);
+        printf("Preco: R$%.2f\n", book_reg[i].price);
+        printf("\n");
+    }
 }
 
+
 void printBook(Book book_reg) {
-	printf("\nTitulo: %s\n", book_reg.title);
-	printf("Autor: %s\n", book_reg.author);
-	printf("Editor: %s\n", book_reg.publisher);
-	printf("Idioma: %s\n", book_reg.language);
-	printf("Ano: %d\n", book_reg.year);
-	printf("Numero de paginas: %d\n", book_reg.pages);
-	printf("Preco: R$%.2f\n", book_reg.price);
-	printf("\n");
+    printf("\nTitulo: %s\n", book_reg.title);
+    printf("Autor: %s\n", book_reg.author);
+    printf("Editora: %s\n", book_reg.publisher);
+    printf("Idioma: %s\n", book_reg.language);
+    printf("Ano: %d\n", book_reg.year);
+    printf("Numero de paginas: %d\n", book_reg.pages);
+    printf("Preco: R$%.2f\n", book_reg.price);
+    printf("\n");
 }
 
 void searchByYear(Book *book_reg, int size, int year) {
@@ -208,99 +219,82 @@ char *readString() {
 }
 
 int readBookData(Book *book_reg) {
-
-	// Verifica se o registro foi inicializado corretamente
-	if (book_reg == NULL)
-		return INVALID_REGISTER;
-
-	printf("***ENTRE COM OS DADOS DO LIVRO***\n\n");
-
-	book_reg->size = SEPARATORS;
-
-	printf("Titulo: ");
-	book_reg->title = readString();
-	book_reg->size += strlen(book_reg->title);
-
-	printf("Autor: ");
-	book_reg->author = readString();
-	book_reg->size += strlen(book_reg->author);
-
-	printf("Editor: ");
-	book_reg->publisher = readString();
-	book_reg->size += strlen(book_reg->publisher);
-
-	printf("Lingua: ");
-	book_reg->language = readString();
-	book_reg->size += strlen(book_reg->language);
-
-	printf("Ano: ");
-	scanf("%d", &book_reg->year);
-	book_reg->size += sizeof(int);
-
-	printf("Numero de Paginas: ");
-	scanf("%d", &book_reg->pages);
-	book_reg->size += sizeof(int);
-
-	printf("Preco: ");
-	scanf("%f", &book_reg->price);
-	book_reg->size += sizeof(float);
-
-	getchar();
-
-	return SUCCESS;
+    // Verifica se o registro foi inicializado corretamente
+    if (book_reg == NULL)
+            return INVALID_REGISTER;
+    printf("\nDigite os dados do livro\n\n");
+    book_reg->size = SEPARATORS;
+    printf("Titulo: ");
+    book_reg->title = readString();
+    book_reg->size += strlen(book_reg->title);
+    printf("Autor: ");
+    book_reg->author = readString();
+    book_reg->size += strlen(book_reg->author);
+    printf("Editora: ");
+    book_reg->publisher = readString();
+    book_reg->size += strlen(book_reg->publisher);
+    printf("Idioma: ");
+    book_reg->language = readString();
+    book_reg->size += strlen(book_reg->language);
+    printf("Ano: ");
+    scanf("%d", &book_reg->year);
+    book_reg->size += sizeof(int);
+    printf("Numero de paginas: ");
+    scanf("%d", &book_reg->pages);
+    book_reg->size += sizeof(int);
+    printf("Preco: R$");
+    scanf("%f", &book_reg->price);
+    book_reg->size += sizeof(float);
+    getchar();
+    return SUCCESS;
 }
 
 int readBooksData (FILE *book_file, Book *book_reg) {
-
 	if (book_reg == NULL)
 		return INVALID_REGISTER;
 
 	int end_flag = 0;
 	do {
-
 		printf("Para finalisar o cadastro de livro digite: ...\n\n");
-
 		if (readBookData(book_reg) == INVALID_REGISTER)
 			return INVALID_REGISTER;
+<<<<<<< HEAD
 		
+=======
+>>>>>>> ariella
 		if(strcmp(book_reg->title, "...") == 0)
 			end_flag = 1;
 		else
 			addBook(book_file, book_reg);
+<<<<<<< HEAD
 
+=======
+>>>>>>> ariella
 		cleanBookReg(book_reg);	
-
 	} while(end_flag != 1);
-
 	return SUCCESS;
 }
 
 int getYear() {
-	int year;
-	printf("_______________________________\n\n");
-	printf("Ano: ");
-	scanf("%d", &year);
-	getchar();
-
-	return year;
+    int year;
+    printf("\nAno: ");
+    scanf("%d", &year);
+    getchar();
+    return year;
 }
-
+ 
 char *getAuthor() {
-	char *author;
-	printf("_______________________________\n\n");
-	printf("Autor: ");
-	author = readString();
-
-	return author;
+    char *author;
+    printf("\nAutor: ");
+    author = readString();
+    return author;
 }
-
+ 
 char *getPublisher() {
-	char *publisher;
-	printf("_______________________________\n\n");
-	printf("Editora: ");
-	publisher = readString();
-
-	return publisher;
+    char *publisher;
+    printf("\nEditora: ");
+    publisher = readString();
+    return publisher;
 }
 
 //Libera as memória alocada para a leitura das strings
@@ -324,4 +318,28 @@ int cleanBookList (Book *books, int *size) {
 		free(books[i].language);
 	}
 	return SUCCESS;
+}
+
+int printError(int flag) {
+    if (flag == SUCCESS)
+        return 0;
+    printf("\n----------------------------\n");
+    printf("            ERRO            \n");
+    printf("----------------------------\n\n");
+    switch (flag) {
+        case INVALID_FILE:
+            printf("Erro durante abertura de\narquivo.\n\n");
+            break;
+        case INVALID_ARGUMENT:
+            printf("Argumento invalido passado\ncomo parametro.\n\n");
+            break;
+        case INDEX_DONT_EXIST:
+            printf("Ainda nao existem dados\nsuficientes para criar os arquivos de indice.\n\n");
+            break;
+        case NOT_FOUND:
+            printf("A chave procurada nao foi\nencontrada.\n\n");
+            break;
+    }
+    printf("----------------------------\n\n");
+    return 1;
 }
