@@ -75,6 +75,7 @@ int main () {
 					searchByYear(book_reg, n_reg, year);
 					cleanBookList(book_reg, &n_reg);
 				}
+				break;
 
 			case '5':	// BUSCA POR AUTOR
 				key = getAuthor();
