@@ -195,7 +195,6 @@ int recoverBooks (FILE *book_file, Book **books, int *n_reg) {
 	fread(&stack_top, sizeof(long int), 1, book_file);
 	fread(n_reg, sizeof(int), 1, book_file); 
 
-	printf("%d\n", *n_reg);
 	*books = (Book*) realloc (*books, (*n_reg) * sizeof(Book));
 
 	while (i < *n_reg) {
@@ -334,8 +333,8 @@ int createIndexByPublisher (FILE *book_file)
 	qsort(books, n_reg, sizeof(Book), compare_publisher);
 
 	// Abre os arquivos para escrita
-	index_file = fopen("publisher.idx", "w");
-	list_file = fopen("publisher.list", "w");
+	index_file = fopen("publisher.idx", "w+");
+	list_file = fopen("publisher.list", "w+");
 	if(index_file == NULL || list_file == NULL)
 	{
 		return INVALID_FILE;
@@ -441,7 +440,7 @@ int searchByAuthor (FILE *book_file, Book **book_reg, int *n_reg, char *author) 
 
 	index_file = fopen("author.idx", "r+");
 	list_file = fopen("author.list", "r+");
-	if (index == NULL || list == NULL)
+	if (index_file == NULL || list_file == NULL)
 		return INDEX_DONT_EXIST;
 
 	index = getIndex(index_file, &index_size);
@@ -495,7 +494,7 @@ int searchByPublisher (FILE *book_file, Book **book_reg, int *n_reg, char *publi
 
 	index_file = fopen("publisher.idx", "r+");
 	list_file = fopen("publisher.list", "r+");
-	if (index == NULL || list == NULL)
+	if (index_file == NULL || list_file == NULL)
 		return INDEX_DONT_EXIST;
 
 	index = getIndex(index_file, &index_size);
@@ -540,21 +539,17 @@ int searchByPublisher (FILE *book_file, Book **book_reg, int *n_reg, char *publi
 
 //////////////////
 int matching(Book *list_a, int size_a, Book * list_b, int size_b, Book **list_c, int *size_c) {
-	long int offset_a, offset_b;
 	int i = 0, a = 0, b = 0;
 
-	*list_c = (Book*) realloc(*list_c, sizeof(Book) * (a+b));
-
-	offset_a = list_a[a].offset;
-	offset_b = list_b[b].offset;
+	*list_c = (Book*) realloc(*list_c, sizeof(Book) * (size_a+size_b));
 
 	while(a < size_a && b < size_b) {
-		if (offset_a < offset_b)
+		if (list_a[a].offset < list_b[b].offset)
 			a++;
-		else if (offset_a > offset_b)
+		else if (list_a[a].offset > list_b[b].offset)
 			b++;
 		else {
-			*list_c[i++] = list_a[a];
+			list_c[0][i++] = list_a[a];
 			a++;
 			b++;
 		}
@@ -588,8 +583,6 @@ int searchByAuthorAndPublisher (FILE *book_file, Book **book_reg, int *n_reg, ch
 
 	// Se alguma das buscas não encontrou nenhum resultado
 	if (error1 != SUCCESS) {
-	printf("AQUI\n");
-		
 		free(author_books);
 		free(publisher_books);
 		return error1;
@@ -604,7 +597,12 @@ int searchByAuthorAndPublisher (FILE *book_file, Book **book_reg, int *n_reg, ch
 	qsort(author_books, n_author, sizeof(Book), compare_offset);
 	qsort(publisher_books, n_publisher, sizeof(Book), compare_offset);
 
-	return matching(author_books, n_author, publisher_books, n_publisher, book_reg, n_reg);
+	error1 = matching(author_books, n_author, publisher_books, n_publisher, book_reg, n_reg);
+
+	free(author_books);
+	free(publisher_books);
+	
+	return error1;
 }
 
 int searchByAuthorOrPublisher (FILE *book_file, Book **book_reg, int *n_reg, char *author, char *publisher) {
