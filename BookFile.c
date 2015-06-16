@@ -483,8 +483,58 @@ int searchByAuthor (FILE *book_file, Book **book_reg, int *n_reg, char *author) 
 	return SUCCESS;
 }
 
-int searchByPublisher (FILE *book_file, Book **book_reg, int *n_reg) {
+int searchByPublisher (FILE *book_file, Book **book_reg, int *n_reg, char *publisher) {
+	FILE *index_file, *list_file;
+	Index *index;
+	List *list;
+	int index_size, list_size, i, j, k, flag = 0;
+	long int *offset = NULL;
 
+	*n_reg = getNumberOfRegisters(book_file);
+	offset = (long int *) malloc(sizeof(long int) * (*n_reg));
+
+	index_file = fopen("publisher.idx", "r+");
+	list_file = fopen("publisher.list", "r+");
+	if (index == NULL || list == NULL)
+		return INDEX_DONT_EXIST;
+
+	index = getIndex(index_file, &index_size);
+	list = getList(list_file, &list_size);
+
+	// Salva os offsets dos registros correspondentes a busca
+	for (i = 0; i < index_size; i++) {
+		if (strncmp(index[i].key, publisher, KEY_SIZE) == 0) {
+			flag = 1;
+			k = 0;
+			for (j = index[i].list_rrn; j != -1; j = list[j].next) {
+				offset[k++] = list[j].offset;
+			}
+			*n_reg = k;
+			break;
+		}
+	}
+
+	fclose(list_file);
+	fclose(index_file);
+	free(list);
+	free(index);
+
+	if (flag == 0)
+		return NOT_FOUND;
+
+	// Salva os registros em uma lista
+	j = 0;
+	book_reg[0] = (Book*) realloc(*book_reg, sizeof(Book) * k);
+	for (i = 0; i < k; i++) {
+		fseek(book_file, offset[i], SEEK_SET);
+		if (readRegister(book_file, &book_reg[0][j]) != INVALID_REGISTER)
+			j++;
+	}
+
+	free(offset);
+	*n_reg = j;
+
+	return SUCCESS;
 }
 
 int searchByAuthorAndPublisher (FILE *book_file, Book **book_reg, int *n_reg) {

@@ -98,7 +98,7 @@ int searchByAuthor (FILE *, Book **, int*, char*); //MARLY
 
 /* Busca a editora desejada a partir do arquivo de indice
 */
-int searchByPublisher (FILE *, Book **, int*); //MARLY
+int searchByPublisher (FILE *, Book **, int*, char*); //MARLY
 
 
 /* Busca por autor e editora simultanemante

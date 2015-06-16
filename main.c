@@ -89,7 +89,9 @@ int main () {
 				break;
 
 			case '6':	// BUSCA POR EDITORA
-				error_flag = searchByPublisher(book_file, &book_reg, &n_reg);
+				key = getPublisher();
+				error_flag = searchByPublisher(book_file, &book_reg, &n_reg, key);
+				free(key);
 				if (error_flag == INDEX_DONT_EXIST)
 					printf("\n\n************** O ARQUIVO AINDA NÃO POSSUI INDICES **************\n\n");
 				else {
