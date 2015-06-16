@@ -211,7 +211,6 @@ int recoverBooks (FILE *book_file, Book **books, int *n_reg) {
 	fread(&stack_top, sizeof(long int), 1, book_file);
 	fread(n_reg, sizeof(int), 1, book_file); 
 
-	printf("%d\n", *n_reg);
 	*books = (Book*) realloc (*books, (*n_reg) * sizeof(Book));
 
 	while (i < *n_reg) {
