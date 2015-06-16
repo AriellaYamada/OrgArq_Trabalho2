@@ -814,12 +814,12 @@ int removeBook (FILE *book_file, char *author_name) {
 	fread(reg, string_size, 1, book_file);
 
 	// Marca o registro como apagado
-	reg[sizeof(long int)] = '*';
+	reg[0] = '*';
 	fseek(book_file, offset, SEEK_SET);
-	fwrite(reg, string_size, 1, book_file);
+	fwrite(reg, sizeof(char), 1, book_file);
 
 	// Salva o próximo da pilha
-	fseek(book_file, offset, SEEK_SET);
+	fseek(book_file, (offset + 1), SEEK_SET);
 	fwrite(&stack_top, sizeof(long int), 1, book_file);
 
 	return SUCCESS;
